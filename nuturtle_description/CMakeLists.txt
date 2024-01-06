@@ -24,3 +24,12 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
+
+
+ # installing these subdirectories to the package's share directory
+install(DIRECTORY
+  config
+  launch
+  urdf
+  DESTINATION share/nuturtle_description/
+)
