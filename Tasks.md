@@ -7,7 +7,7 @@
 - [x]   0.4
 
 #### Task A (Robot Description)
-- [ ] A.1
+- [x] A.1
 - [ ] A.2
 - [ ] A.3
 - [ ] A.4

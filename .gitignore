@@ -14,3 +14,5 @@ devel/
 .cache/
 *.cache
 
+*.pyc
+__pycache__/
