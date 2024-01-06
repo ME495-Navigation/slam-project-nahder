@@ -1,0 +1,81 @@
+<launch>
+
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_description)/config/basic_all.rviz"/>
+
+    <!-- purple turtle -->
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="use_rviz" value="false" />
+        <arg name="use_jsp" value="true" />
+        <arg name="color" value="purple" />
+    </include>
+
+    <!-- red turtle -->
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="use_rviz" value="false" />
+        <arg name="use_jsp" value="true" />
+        <arg name="color" value="red" />
+    </include>
+
+    <!-- green turtle -->
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="use_rviz" value="false" />
+        <arg name="use_jsp" value="true" />
+        <arg name="color" value="green" />
+    </include>
+
+    <!-- blue turtle -->
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
+        <arg name="use_rviz" value="false" />
+        <arg name="use_jsp" value="true" />
+        <arg name="color" value="blue" />
+    </include>
+
+    <!-- Red turtle displacement rlt to world -->
+    <node pkg="tf2_ros"
+        exec="static_transform_publisher"
+        name="world_to_red"
+        args="
+            --x 0.3
+            --y 0
+            --z 0
+            --frame-id nusim/world
+            --child-frame-id red/base_footprint
+            "/>
+
+    <!-- Green turtle displacement rlt to world -->
+    <node pkg="tf2_ros"
+        exec="static_transform_publisher"
+        name="world_to_green"
+        args="
+            --x 0
+            --y 0.6
+            --z 0
+            --frame-id nusim/world
+            --child-frame-id green/base_footprint
+            "/>
+
+    <!-- Blue turtle displacement rlt to world -->
+    <node pkg="tf2_ros"
+        exec="static_transform_publisher"
+        name="world_to_blue"
+        args="
+            --x -0.71
+            --y 0
+            --z 0
+            --frame-id nusim/world
+            --child-frame-id blue/base_footprint
+            "/>
+
+    <!-- Purple turtle displacement rlt to world -->
+    <node pkg="tf2_ros"
+        exec="static_transform_publisher"
+        name="world_to_purple"
+        args="
+            --x 0
+            --y -.9
+            --z 0
+            --frame-id nusim/world
+            --child-frame-id purple/base_footprint
+            "/>
+
+</launch>
