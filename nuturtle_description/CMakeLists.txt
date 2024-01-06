@@ -30,6 +30,7 @@ ament_package()
 install(DIRECTORY
   config
   launch
+  meshes
   urdf
   DESTINATION share/nuturtle_description/
 )
