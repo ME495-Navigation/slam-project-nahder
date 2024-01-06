@@ -12,7 +12,7 @@
 - [x] A.3 (yaml file) 
 - [x] A.4 (prefix)
 - [x] A.5 (multi robot) 
-- [ ] A.6 (README)
+- [x] A.6 (README)
 
 #### Task B (C++ and 2D Transforms) 
 - [ ] B.1 (geometry primitives)
