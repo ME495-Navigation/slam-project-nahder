@@ -2,5 +2,5 @@
 * Nader Ahmed
 * Winter 2024
 # Package List
-<!-- This repository consists of several ROS packages
-- <PACKAGE1> - <one sentence description> -->
+This repository consists of several ROS packages
+- nuturtle_description - visualize multiple turtlebots of different colors in rviz
