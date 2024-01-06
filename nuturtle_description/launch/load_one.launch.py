@@ -11,21 +11,28 @@ import launch
 def generate_launch_description():
     
     return LaunchDescription([
+        
+    DeclareLaunchArgument(
+        name='color',
+        default_value="purple",
+        choices=['red', 'blue', 'purple', 'green'],
+        description='Color choice for the turtle bot. purple by default'
+    ),
     
     # use_jsp launch argument
     DeclareLaunchArgument(
         "use_jsp",
-        default_value="true",
-        description="Choose whether to use the joint state publisher. by default: true.  \
-            otherwise no jsp"
+        default_value="true", choices=['true', 'false'],
+        description="Choose whether to use the joint state publisher or not(true/false). \
+        true by default"
     ),
 
     # use_rviz launch argument
     DeclareLaunchArgument(
         "use_rviz",
-        default_value="true",
-        description="Choose whether to use rviz. by default: true. \
-            otherwise no rviz"
+        default_value="true", choices=['true', 'false'],
+        description="Choose whether to use rviz or not (true/false). \
+        true by default"
     ),
     
     # joint_state_publisher node
