@@ -6,32 +6,44 @@ cmake_minimum_required(VERSION 3.22)
 # find the c and c++ compilers
 project(turtlelib)
 
-# find_package(Doxygen)
+find_package(Doxygen)
 
-# # Building documentation should be optional.
-# # To build documentation pass -DBUILD_DOCS=ON when generating the build system
-# option(BUILD_DOCS "Build the documentation" OFF)
+# Building documentation should be optional.
+# To build documentation pass -DBUILD_DOCS=ON when generating the build system
+option(BUILD_DOCS "Build the documentation" OFF)
 
-# # build just because Doxygen is missing
-# if(${DOXYGEN_FOUND} AND ${BUILD_DOCS})
-#     # Turn the README.md into the homepage of the doxygen docs
-#     set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
-
-#     # Tell Doxygen where to find the documentation
-#     doxygen_add_docs(doxygen include/ src/ README.md ALL)
-
-#     # The documentation will be in the build/html directory
-#     # The main page is build/html/index.html
-# endif()
+# build just because Doxygen is missing
+if(${DOXYGEN_FOUND} AND ${BUILD_DOCS})
+    # Turn the README.md into the homepage of the doxygen docs
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
+    # Tell Doxygen where to find the documentation
+    doxygen_add_docs(doxygen include/ src/ README.md ALL)
+    # The documentation will be in the build/html directory
+    # The main page is build/html/index.html
+endif()
 
 include(CTest)
-# find_package(Catch2 3 REQUIRED)
+# CTest sets BUILD_TESTING to on. To disable tests add -DBUILD_TESTING=OFF when invoking cmake
+if(BUILD_TESTING)
+    # Find the Unit testing framework. In this example, Catch2
+    find_package(Catch2 3 REQUIRED)
+
+    # A test is just an executable that is linked against the unit testing library
+    # TODO: add a test
+    # add_executable(my_test_exe tests/mytest.cpp)
+    # target_link_libraries(my_test_exe Catch2::Catch2WithMain AnyOtherLibrariesAsNeeded)
+
+    # register the test with CTest, telling it what executable to run
+    add_test(NAME the_test_name COMMAND my_test_exe)
+endif()
 
 # Create a library.  Can specify if it is shared or static but usually
 # you don't need or want to.
 # name is the name of the library without the extension or lib prefix
 # name creates a cmake "target"
-add_library(turtlelib src/libfile1.cpp src/libfile2.cpp)
+add_library(turtlelib src/geometry2d.cpp)
+
+add_executable(frame_main src/frame_main.cpp)
 
 # Use target_include_directories so that #include"mylibrary/header.hpp" works
 # The use of the <BUILD_INTERFACE> and <INSTALL_INTERFACE> is because when
@@ -75,9 +87,10 @@ install(DIRECTORY include/turtlelib DESTINATION include)
 # find_package(project_name) from another cmake project
 # A user can then target_link_libraries(target project_name::library)
 # to use the libraries installed here
+target_link_libraries(frame_main turtlelib)
 
-# install(TARGETS Name turtlelib EXPORT project_name-targets)
 
+install(TARGETS frame_main turtlelib EXPORT turtlelib-targets)
 
 install(EXPORT turtlelib-targets
         FILE turtlelib-config.cmake
