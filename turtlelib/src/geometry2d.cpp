@@ -19,8 +19,7 @@ namespace turtlelib {
 
     //operator overloading for putting a point into an output stream
     std::ostream & operator<<(std::ostream & os, const Point2D & p) {
-        os << "[" << p.x << " " << p.y << "]";
-        return os;
+        return os << "[" << p.x << " " << p.y << "]";
     }
     
     //read data from input stream into point object as [x y] or x y
@@ -37,27 +36,34 @@ namespace turtlelib {
         return is;
     }
 
-    // Vector2D operator-(const Point2D & head, const Point2D & tail) {
-    //     ;
-    // }
+    //subtract two points to get the vector tail to head
+    Vector2D operator-(const Point2D & head, const Point2D & tail) {
+        return Vector2D{head.x-tail.x, head.y-tail.y};
+    }
 
-    // Point2D operator+(const Point2D & tail, const Vector2D & disp) {
-    //     ;    /// \brief input a 2 dimensional point
-    // ///   You should be able to read vectors entered as follows:
-    // ///   [x y] or x y
-    // /// \param is - stream from which to read
-    // /// \param p [out] - output vector
-    // /// HINT: See operator>> for Vector2D
-    // std::istream & operator>>(std::istream & is, Point2D & p) {
-    //     ;
-    // }
-    // }
+    //add a point and a vector to displace the point
+    Point2D operator+(const Point2D & tail, const Vector2D & disp) {
+        return Point2D{tail.x + disp.x, tail.y + disp.y};
+    }
 
-    // std::ostream & operator<<(std::ostream & os, const Vector2D & v) {
-    //     ;
-    // }
+    //overload the << operator for putting a vector in the output stream
+    std::ostream & operator<<(std::ostream & os, const Vector2D & v) {
+        return os << "[" << v.x << " " << v.y << "]";
+    }
 
-    // std::istream & operator>>(std::istream & is, Vector2D & v) {
-    //     ;
-    // }
+    //read data from input stream into vector object as [x y] or x y
+    std::istream & operator>>(std::istream & is, Vector2D & v) {
+        char c;
+        is >> c; //read first character
+        if (c == '[') { //if we find a bracket, start reading
+            is >> v.x >> v.y >> c; //unpack the input stream element by element
+        }
+        else { 
+            is.putback(c); //if no brackets, we found a number: put it back in the stream
+            is >> v.x >> v.y;
+        }
+        return is;
+    }
+    
+
 } 

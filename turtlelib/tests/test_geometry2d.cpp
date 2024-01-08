@@ -48,16 +48,15 @@ namespace turtlelib {
         REQUIRE(is_within_range(normalized_angle));
     }
 
-
     TEST_CASE("Output point 2D", "[output<<]") {
-        turtlelib::Point2D p{5.1, -2.5};
+        Point2D p{5.1, -2.5};
         std::ostringstream os;
         os << p;
         REQUIRE(os.str() == "[5.1 -2.5]");
     }
     
     TEST_CASE("Input point 2D, brackets", "[input>>]") {
-        turtlelib::Point2D p;
+        Point2D p;
         std::istringstream is("[1.2 3.4]");
         is >> p;
         REQUIRE(p.x == 1.2);
@@ -65,11 +64,50 @@ namespace turtlelib {
     }
 
     TEST_CASE("Input point 2D, no brackets", "[input>>]") {
-        turtlelib::Point2D p; 
+        Point2D p; 
         std::istringstream is("1.2 3.4");
         is >> p;
         REQUIRE(p.x == 1.2);
         REQUIRE(p.y == 3.4); 
+    }
+
+    TEST_CASE("Subtracting two points", "[vector-]") {
+        Point2D p1{1.2, 5.6}; 
+        Point2D p2{0.5, 0.2};
+        Vector2D v = p1-p2;
+        REQUIRE_THAT(v.x, Catch::Matchers::WithinRel(0.7)); 
+        REQUIRE_THAT(v.y, Catch::Matchers::WithinRel(5.4)); 
+    }
+
+    TEST_CASE("Adding a point and a vector", "[vector+]") {
+        Point2D p{9.3, -2.5}; 
+        Vector2D v{15,18};
+        p = p + v; 
+        REQUIRE_THAT(p.x, Catch::Matchers::WithinRel(24.3)); 
+        REQUIRE_THAT(p.y, Catch::Matchers::WithinRel(15.5)); 
+    }
+
+    TEST_CASE("Output vector 2D", "[output<<]") {
+        Vector2D v{10.5, -19.4};
+        std::ostringstream os;
+        os << v;
+        REQUIRE(os.str() == "[10.5 -19.4]");
+    }
+
+    TEST_CASE("Input vector 2D, brackets", "[input>>]") {
+        Vector2D v;
+        std::istringstream is("[21.5 -31.5]");
+        is >> v;
+        REQUIRE(v.x == 21.5);
+        REQUIRE(v.y == -31.5);
+    }
+
+    TEST_CASE("Input vector 2D, no brackets", "[input>>]") {
+        Vector2D v;
+        std::istringstream is("5.3 2.8");
+        is >> v;
+        REQUIRE(v.x == 5.3);
+        REQUIRE(v.y == 2.8);
     }
 
 }
