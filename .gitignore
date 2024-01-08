@@ -16,3 +16,8 @@ devel/
 
 *.pyc
 __pycache__/
+
+# Ignore vscode settings
+.vscode/
+
+Testing
