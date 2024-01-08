@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include "turtlelib/geometry2d.hpp"
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <sstream> 
+#include <iostream>
 
 //https://github.com/catchorg/Catch2/blob/devel/docs/tutorial.md#top
 //https://github.com/catchorg/Catch2/blob/devel/docs/comparing-floating-point-numbers.md
@@ -45,4 +47,29 @@ namespace turtlelib {
         REQUIRE_THAT(normalized_angle, Catch::Matchers::WithinRel(-PI / 2)); 
         REQUIRE(is_within_range(normalized_angle));
     }
+
+
+    TEST_CASE("Output point 2D", "[output<<]") {
+        turtlelib::Point2D p{5.1, -2.5};
+        std::ostringstream os;
+        os << p;
+        REQUIRE(os.str() == "[5.1 -2.5]");
+    }
+    
+    TEST_CASE("Input point 2D, brackets", "[input>>]") {
+        turtlelib::Point2D p;
+        std::istringstream is("[1.2 3.4]");
+        is >> p;
+        REQUIRE(p.x == 1.2);
+        REQUIRE(p.y == 3.4);
+    }
+
+    TEST_CASE("Input point 2D, no brackets", "[input>>]") {
+        turtlelib::Point2D p; 
+        std::istringstream is("1.2 3.4");
+        is >> p;
+        REQUIRE(p.x == 1.2);
+        REQUIRE(p.y == 3.4); 
+    }
+
 }
