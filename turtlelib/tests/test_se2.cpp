@@ -94,12 +94,51 @@ namespace turtlelib {
         REQUIRE_THAT(inv_xform.translation().x, Catch::Matchers::WithinAbs(-5.86899,1e-5));
         REQUIRE_THAT(inv_xform.translation().y, Catch::Matchers::WithinAbs(-1.62634,1e-5));
         REQUIRE(inv_xform.rotation() == -PI/4);
+    }
+
+    TEST_CASE("Testing multiplying two transforms", "[xform]") {
+        Transform2D xform{Vector2D{3.0, 5.3}, PI/4};    
+        Transform2D xform2{Vector2D{10.0, -12.3}, PI/6}; 
+        xform *= xform2; 
+
+        REQUIRE_THAT(xform.translation().x, Catch::Matchers::WithinAbs(18.76848, 1e-5));
+        REQUIRE_THAT(xform.translation().y, Catch::Matchers::WithinAbs(3.67365, 1e-5));
+        REQUIRE(xform.rotation() == (PI/4+PI/6));
 
     }
 
 
-    
-    
+    TEST_CASE("Multiplying by inverse transform", "[xform]") {
+        Transform2D xform{Vector2D{4.0, -5.0}, PI/2};
+        Transform2D inverse = xform.inv();
+
+        xform *= inverse;
+
+        REQUIRE_THAT(xform.translation().x, Catch::Matchers::WithinAbs(0.0, 1e-5));
+        REQUIRE_THAT(xform.translation().y, Catch::Matchers::WithinAbs(0.0, 1e-5));
+        REQUIRE_THAT(xform.rotation(), Catch::Matchers::WithinAbs(0.0, 1e-5));
+    }
+
+    TEST_CASE("Testing multiplying two transforms with rotation and translation", "[xform]") {
+        Transform2D xform1{Vector2D{2.0, 3.0}, PI / 4};
+        Transform2D xform2{Vector2D{1.0, -1.0}, PI / 6};
+
+        xform1 *= xform2;
+
+        double expected_rot = PI / 4 + PI / 6;
+
+        Vector2D expected_trans = Vector2D{
+            2.0 + (cos(PI / 4) * 1.0 - sin(PI / 4) * -1.0),
+            3.0 + (sin(PI / 4) * 1.0 + cos(PI / 4) * -1.0)
+        };
+        REQUIRE_THAT(xform1.translation().x, Catch::Matchers::WithinAbs(expected_trans.x, 1e-5));
+        REQUIRE_THAT(xform1.translation().y, Catch::Matchers::WithinAbs(expected_trans.y, 1e-5));
+        REQUIRE_THAT(xform1.rotation(), Catch::Matchers::WithinAbs(expected_rot, 1e-5));
+    }
+
+
+
+
 }
     
 

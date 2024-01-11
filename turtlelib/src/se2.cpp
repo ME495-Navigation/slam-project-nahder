@@ -92,6 +92,17 @@ namespace turtlelib {
 
     }
 
+    // multiply the rhs transform and update current object's fields 
+    Transform2D & Transform2D::operator*=(const Transform2D & rhs) {
+        vec.x = vec.x + rhs.vec.x*cos(theta) - rhs.vec.y*sin(theta);
+        vec.y = vec.y + rhs.vec.y*cos(theta) + rhs.vec.x*sin(theta); 
+        theta += rhs.theta; 
+
+        return *this;
+    }
+
+
+
     
 
 
