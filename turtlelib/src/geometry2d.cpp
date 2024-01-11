@@ -1,6 +1,6 @@
 // implementing the geometry2d.hpp functions
 
-#include "turtlelib/geometry2d.hpp" //cmake will look for this file in the include directory
+#include "turtlelib/geometry2d.hpp" 
 #include <ostream>
 #include <iostream>
 namespace turtlelib {

@@ -15,8 +15,8 @@
 - [x] A.6 (README)
 
 #### Task B (C++ and 2D Transforms) 
-- [ ] B.1 (geometry primitives)
-- [ ] B.2 (unit testing geometry)
+- [x] B.1 (geometry primitives)
+- [x] B.2 (unit testing geometry)
 - [ ] B.3 (SE(2) geometry)
 - [ ] B.4 (unit testing SE(2)) 
 - [ ] B.5 (visualization)
