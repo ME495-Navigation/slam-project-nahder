@@ -58,7 +58,6 @@ namespace turtlelib {
         return Point2D{x_new, y_new};
     }
 
-
     //vectors are invariant under translation
     Vector2D Transform2D::operator()(Vector2D v) const {
 
@@ -67,6 +66,33 @@ namespace turtlelib {
 
         return Vector2D{x_new, y_new};
     }
+
+
+    // Transform the frame of a twist object using the 2D adjoint
+    Twist2D Transform2D::operator()(Twist2D v) const {
+
+        double xdot_new{vec.y * v.omega + cos(theta) * v.x - sin(theta) * v.y};
+        double ydot_new{-vec.x * v.omega + sin(theta) * v.x + cos(theta) * v.y};
+
+        return Twist2D{v.omega, xdot_new, ydot_new};
+    }
+
+    
+    // invert the transformation object and return it
+    Transform2D Transform2D::inv() const {
+        
+        Vector2D vec_new {
+            -vec.x*cos(theta)-vec.y*sin(theta), 
+            -vec.y*cos(theta) + vec.x*sin(theta)
+        };
+
+        double theta_new{-theta}; 
+
+        return Transform2D{vec_new, theta_new};
+
+    }
+
+    
 
 
     

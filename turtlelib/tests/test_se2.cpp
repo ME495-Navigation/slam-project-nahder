@@ -77,6 +77,27 @@ namespace turtlelib {
         REQUIRE_THAT(v.x, Catch::Matchers::WithinRel(-1.2)); 
         REQUIRE_THAT(v.y, Catch::Matchers::WithinRel(2.7)); 
     }
+
+    TEST_CASE("Testing changing the ref frame of a twist", "[xform]") {
+        Twist2D twist{5.0, 2.0, 12.0}; 
+        Transform2D xform{Vector2D{10.0, 15.0}, PI/2}; 
+        Twist2D twist_new = xform(twist);
+        REQUIRE_THAT(twist_new.omega, Catch::Matchers::WithinRel(5.0));
+        REQUIRE_THAT(twist_new.x, Catch::Matchers::WithinRel(63.0)); 
+        REQUIRE_THAT(twist_new.y, Catch::Matchers::WithinRel(-48.0)); 
+    }
+
+    TEST_CASE("Testing inverting a transformation matrix", "[xform]") {
+        Transform2D xform{Vector2D{3.0, 5.3}, PI/4}; 
+        Transform2D inv_xform = xform.inv();
+
+        REQUIRE_THAT(inv_xform.translation().x, Catch::Matchers::WithinAbs(-5.86899,1e-5));
+        REQUIRE_THAT(inv_xform.translation().y, Catch::Matchers::WithinAbs(-1.62634,1e-5));
+        REQUIRE(inv_xform.rotation() == -PI/4);
+
+    }
+
+
     
     
 }
