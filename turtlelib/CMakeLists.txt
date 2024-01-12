@@ -31,13 +31,18 @@ if(BUILD_TESTING)
     # A test is just an executable that is linked against the unit testing library
     add_executable(test_geometry2d tests/test_geometry2d.cpp)
     add_executable(test_se2 tests/test_se2.cpp)
+    add_executable(test_svg tests/test_svg.cpp)
+
 
     target_link_libraries(test_geometry2d turtlelib Catch2::Catch2WithMain)
     target_link_libraries(test_se2 turtlelib Catch2::Catch2WithMain)
+    target_link_libraries(test_svg turtlelib Catch2::Catch2WithMain)
+
 
     # register the test with CTest, telling it what executable to run
     add_test(NAME Test_Geometry2D COMMAND test_geometry2d)
     add_test(NAME Test_SE2 COMMAND test_se2)
+    add_test(NAME Test_SVG COMMAND test_svg)
 
 endif()
 
@@ -45,7 +50,7 @@ endif()
 # you don't need or want to.
 # name is the name of the library without the extension or lib prefix
 # name creates a cmake "target"
-add_library(turtlelib src/geometry2d.cpp src/se2.cpp)
+add_library(turtlelib src/geometry2d.cpp src/se2.cpp src/svg.cpp)
 
 add_executable(frame_main src/frame_main.cpp)
 
