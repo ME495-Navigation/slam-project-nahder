@@ -136,6 +136,60 @@ namespace turtlelib {
         REQUIRE_THAT(xform1.rotation(), Catch::Matchers::WithinAbs(expected_rot, 1e-5));
     }
 
+    TEST_CASE("Output Transform 2D", "[output<<]") {
+        Transform2D xform{Vector2D{2.5, 3.5}, PI};
+        std::ostringstream os;
+        os << xform;
+        REQUIRE(os.str() == "deg: 3.14159 x: 2.5 y: 3.5");
+    }
+
+    TEST_CASE("Input Transform2D with parentheses", "[input>>]") {
+        Transform2D tf;
+        std::istringstream is("(60 2.5 3.5)");
+        is >> tf;
+        REQUIRE(tf.rotation() == 60);
+        REQUIRE(tf.translation().x == 2.5);
+        REQUIRE(tf.translation().y == 3.5);
+    }
+
+    TEST_CASE("Input Transform2D, multi-line", "[input>>]") {
+        Transform2D tf{Vector2D{1.0, 2.0}, PI/2};
+        std::istringstream is("60\n2.5\n3.5");
+        is >> tf;
+        REQUIRE(tf.rotation() == 60);
+        REQUIRE(tf.translation().x == 2.5);
+        REQUIRE(tf.translation().y == 3.5);
+    }
+
+    TEST_CASE("Multiplying two transforms", "[xform]") {
+        Transform2D xform1{Vector2D{2.0, 3.0}, PI / 4};
+        Transform2D xform2{Vector2D{1.0, -1.0}, PI / 6};
+        Transform2D xform3 = xform1 * xform2;
+
+        REQUIRE_THAT(xform3.translation().x, Catch::Matchers::WithinAbs(2.0 + (cos(PI / 4) * 1.0 - sin(PI / 4) * -1.0), 1e-5));
+        REQUIRE_THAT(xform3.translation().y, Catch::Matchers::WithinAbs(3.0 + (sin(PI / 4) * 1.0 + cos(PI / 4) * -1.0), 1e-5));
+        REQUIRE_THAT(xform3.rotation(), Catch::Matchers::WithinAbs(PI / 4 + PI / 6, 1e-5));
+    }
+
+    TEST_CASE("Multiplying two transforms 2", "[xform]") {
+        Transform2D xform1{Vector2D{-1.5, 12.3}, PI / 8};
+        Transform2D xform2{Vector2D{10.3,1.5}, PI / 3};
+        Transform2D xform3 = xform1 * xform2;
+
+        REQUIRE_THAT(xform3.translation().x, Catch::Matchers::WithinAbs(7.441934, 1e-5));
+        REQUIRE_THAT(xform3.translation().y, Catch::Matchers::WithinAbs(17.627459, 1e-5));
+        REQUIRE_THAT(xform3.rotation(), Catch::Matchers::WithinAbs(1.439897, 1e-5));
+    }
+
+    TEST_CASE("Multiplying two transforms 3", "[xform]") {
+        Transform2D xform1{Vector2D{5.12,-21.3}, PI / 12};
+        Transform2D xform2{Vector2D{1.1,2.3}, -PI / 5.3};
+        Transform2D xform3 = xform1 * xform2;
+
+        REQUIRE_THAT(xform3.translation().x, Catch::Matchers::WithinAbs(5.587234, 1e-5));
+        REQUIRE_THAT(xform3.translation().y, Catch::Matchers::WithinAbs(-18.79366, 1e-5));
+        REQUIRE_THAT(xform3.rotation(), Catch::Matchers::WithinAbs(-0.330953, 1e-5));
+    }
 
 
 
