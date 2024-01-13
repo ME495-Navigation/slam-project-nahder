@@ -21,10 +21,8 @@ namespace turtlelib {
         svgContent = svgHeader.str();
     }
     
-
     void SVG::addPoint(Point2D p, std::string color, float strokeWidth, float radius) {
-        
-        p = cvt_world_to_svg(tf_world_to_svg, p);
+        p = cvt_svg_to_world(tf_svg_to_world, p);
 
         std::ostringstream svgElement;
         svgElement << "<circle cx=\"" << p.x << "\" cy=\"" << p.y 
@@ -32,30 +30,58 @@ namespace turtlelib {
                 << "\" stroke=\"" << color 
                 << "\" fill=\"" << color 
                 << "\" stroke-width=\"" << strokeWidth << "\" />\n";
+        svgContent += svgElement.str();
+    }
+
+    void SVG::addVector(Point2D head, Point2D tail,
+                        std::string color, float strokeWidth) {
+        head = cvt_svg_to_world(tf_svg_to_world, head);
+        tail = cvt_svg_to_world(tf_svg_to_world, tail);
+
+        std::ostringstream svgElement;
+        svgElement << "<line x1=\"" << tail.x << "\" y1=\"" << tail.y
+                << "\" x2=\"" << head.x << "\" y2=\"" << head.y
+                << "\" stroke=\"" << color
+                << "\" stroke-width=\"" << strokeWidth
+                << "\" marker-start=\"url(#Arrow1Sstart)\" />\n";
 
         svgContent += svgElement.str();
     }
 
-    Point2D SVG::cvt_world_to_svg(const Transform2D &tf, Point2D p) {
-        Point2D p_svg = tf(p);
-        p_svg.y *= -1;
+    void SVG::addCoordinateFrame(Point2D p1, Point2D p2, Point2D p3, Point2D p4,
+                                std::string color1, std::string color2, float strokeWidth) {
+        std::ostringstream svgElement;
+        svgElement << "<g>\n";
+
+        svgContent += svgElement.str();
+
+        addVector(p1, p2, color1, strokeWidth); 
+        addVector(p3, p4, color2, strokeWidth); 
+
+        svgContent += "</g>\n";
+    }
+    
+
+    Point2D SVG::cvt_svg_to_world(const Transform2D &tf, Point2D p) {
+        Point2D p_svg = tf(scale_vb_to_world(p));
+        
+        p_svg.y = vb_height - p_svg.y;
         return p_svg;
+    }
+
+    Point2D SVG::scale_vb_to_world(Point2D p) {
+        return Point2D{p.x * 96.0, p.y * 96.0};
     }
 
     void SVG::close_SVG() {
         svgContent += "</svg>";
     }
-
-    // void SVG::addVector(Point2D head, Point2D tail,
-    //                 std::string color = "black", float strokeWidth = 5.0) {
-                    
-    
-    // }
                     
     void SVG::write_to_file(const std::string& filename) {
         close_SVG();
         std::ofstream file;
         file.open(filename);
         file << svgContent; 
-        file.close();    }
+        file.close();    
+    }
 }

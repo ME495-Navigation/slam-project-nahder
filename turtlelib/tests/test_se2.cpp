@@ -107,13 +107,11 @@ namespace turtlelib {
 
     }
 
-
     TEST_CASE("Multiplying by inverse transform", "[xform]") {
         Transform2D xform{Vector2D{4.0, -5.0}, PI/2};
         Transform2D inverse = xform.inv();
 
         xform *= inverse;
-
         REQUIRE_THAT(xform.translation().x, Catch::Matchers::WithinAbs(0.0, 1e-5));
         REQUIRE_THAT(xform.translation().y, Catch::Matchers::WithinAbs(0.0, 1e-5));
         REQUIRE_THAT(xform.rotation(), Catch::Matchers::WithinAbs(0.0, 1e-5));
@@ -140,23 +138,14 @@ namespace turtlelib {
         Transform2D xform{Vector2D{2.5, 3.5}, PI};
         std::ostringstream os;
         os << xform;
-        REQUIRE(os.str() == "deg: 3.14159 x: 2.5 y: 3.5");
-    }
-
-    TEST_CASE("Input Transform2D with parentheses", "[input>>]") {
-        Transform2D tf;
-        std::istringstream is("(60 2.5 3.5)");
-        is >> tf;
-        REQUIRE(tf.rotation() == 60);
-        REQUIRE(tf.translation().x == 2.5);
-        REQUIRE(tf.translation().y == 3.5);
+        REQUIRE(os.str() == "deg: 180 x: 2.5 y: 3.5");
     }
 
     TEST_CASE("Input Transform2D, multi-line", "[input>>]") {
         Transform2D tf{Vector2D{1.0, 2.0}, PI/2};
         std::istringstream is("60\n2.5\n3.5");
         is >> tf;
-        REQUIRE(tf.rotation() == 60);
+        REQUIRE(tf.rotation() == deg2rad(60));
         REQUIRE(tf.translation().x == 2.5);
         REQUIRE(tf.translation().y == 3.5);
     }

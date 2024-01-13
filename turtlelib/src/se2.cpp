@@ -95,32 +95,33 @@ namespace turtlelib {
     // friend function: defined outside of class scope, has access to all class members
     // appears in function prototype but are not member functions themselves
     std::ostream & operator<<(std::ostream & os, const Transform2D & tf) {
-        return os << "deg: " << tf.theta << " x: " << tf.vec.x << " y: " << tf.vec.y;
+        return os << "deg: " << rad2deg(tf.theta) << " x: " << tf.vec.x << " y: " << tf.vec.y;
     }
 
     std::istream & operator>>(std::istream & is, Transform2D & tf) {
-        char c;
         Vector2D v;
         double theta;
-
-        is >> c; 
-        if ( c == '(') { 
-            is >> theta >> v.x >> v.y >> c;
+        char firstChar = is.peek(); 
+        if (firstChar == 'd') {
+            std::string tmp1, tmp2, tmp3;
+            is >> tmp1; 
+            if (tmp1 == "deg:") {
+                is >> theta >> tmp2 >> v.x >> tmp3 >> v.y;
+            }
         } else {
-            is.putback(c);
             is >> theta >> v.x >> v.y;
-        
         }
-        tf = Transform2D{v, theta};
+        tf = Transform2D{v, deg2rad(theta)};
         return is;
     }
+
 
     // multiply the rhs transform and update current object's fields 
     Transform2D & Transform2D::operator*=(const Transform2D & rhs) {
         vec.x = vec.x + rhs.vec.x*cos(theta) - rhs.vec.y*sin(theta);
         vec.y = vec.y + rhs.vec.y*cos(theta) + rhs.vec.x*sin(theta); 
         theta += rhs.theta; 
-        return *this;
+        return *this; 
     }
 
     /// \brief multiply two transforms together, returning their composition

@@ -15,12 +15,14 @@ TEST_CASE("SVG File Creation Test", "[SVG]") {
     svg.addPoint(Point2D{1.0, 0.0}, "green", 1.0, 1.0);
     svg.addPoint(Point2D{0.0, 1.0}, "blue", 1.0, 1.0);
     svg.addPoint(Point2D{1.0, 1.0}, "black", 1.0, 1.0);
-    
 
+    svg.addVector(Point2D{0.0, 0.0}, Point2D{1.0, 0.0}, "red", 5.0);
+    svg.addVector(Point2D{0.0, 0.0}, Point2D{0.0, 1.0}, "purple", 5.0);
 
+    svg.addCoordinateFrame(Point2D{0.0,0.0}, Point2D{1.0,0.0}, 
+                            Point2D{0.0,0.0}, Point2D{0.0,1.0});
 
-    // Write the SVG to a file
-    std::string filename = "/home/naderahmed/Desktop/test_output.svg";
+    std::string filename = "test_output.svg";
     svg.write_to_file(filename);
 
     std::ifstream file(filename);
