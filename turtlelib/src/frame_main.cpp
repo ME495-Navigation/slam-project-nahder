@@ -7,7 +7,7 @@
 
 int main(void){
 
-    turtlelib::Transform2D T_ab, T_ba, T_bc, T_cb, T_ac, T_ca;
+    turtlelib::Transform2D T_a, T_ab, T_ba, T_bc, T_cb, T_ac, T_ca;
     turtlelib::Point2D p_a, p_b, p_c;
     turtlelib::Vector2D v_a, v_b, v_c;
     turtlelib::Twist2D V_a, V_b, V_c;
@@ -30,6 +30,12 @@ int main(void){
     std::cout << "T_{a,c} = " << T_ac << std::endl;
     std::cout << "T_{c,a} = " << T_ca << std::endl;
 
+    //draw coordinate frames
+    turtlelib::SVG svg;
+    svg.draw_xform(T_a,"a", "purple", 7.0);
+    svg.draw_xform(T_ab,"b", "brown", 5.0);
+    svg.draw_xform(T_ac,"c", "orange", 5.0);
+
     std::cout << "Enter point p_a:" << std::endl;
     std::cin >> p_a;
 
@@ -39,6 +45,10 @@ int main(void){
     std::cout << "p_a = " << p_a << std::endl;
     std::cout << "p_b = " << p_b << std::endl;
     std::cout << "p_c = " << p_c << std::endl;
+
+    svg.addPoint(p_a, "purple", 7.0, 7.0);
+    svg.addPoint(p_b, "brown", 7.0, 7.0);
+    svg.addPoint(p_c, "orange", 7.0, 7.0);
 
     std::cout << "Enter vector v_b:" << std::endl;
     std::cin >> v_b;
@@ -62,7 +72,7 @@ int main(void){
     std::cout << "V_b = " << V_b << std::endl;
     std::cout << "V_c = " << V_c << std::endl;
 
-
+    svg.write_to_file("/tmp/frames.svg");
 
     return 0;
     

@@ -18,13 +18,16 @@ namespace turtlelib
         void addVector(Point2D head, Point2D tail,
                       std::string color = "black", float strokeWidth = 5.0);
 
-        void addCoordinateFrame(Point2D p1, Point2D p2, Point2D p3, Point2D p4,
+        void addCoordinateFrame(Point2D p1, Point2D p2, Point2D p3, Point2D p4,std::string label,
                                 std::string color1 = "green", std::string color2 = "blue",
                                  float strokeWidth = 5.0);
 
         Point2D cvt_svg_to_world(const Transform2D &tf, Point2D p);
 
         Point2D scale_vb_to_world(Point2D p);
+
+        void draw_xform(Transform2D tf, std::string label, 
+                                    std::string color, float strokeWidth);
 
         void close_SVG();
 

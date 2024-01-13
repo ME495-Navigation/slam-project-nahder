@@ -20,7 +20,7 @@ TEST_CASE("SVG File Creation Test", "[SVG]") {
     svg.addVector(Point2D{0.0, 0.0}, Point2D{0.0, 1.0}, "purple", 5.0);
 
     svg.addCoordinateFrame(Point2D{0.0,0.0}, Point2D{1.0,0.0}, 
-                            Point2D{0.0,0.0}, Point2D{0.0,1.0});
+                            Point2D{0.0,0.0}, Point2D{0.0,1.0}, "test");
 
     std::string filename = "test_output.svg";
     svg.write_to_file(filename);
