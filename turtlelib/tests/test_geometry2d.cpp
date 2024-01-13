@@ -18,6 +18,14 @@ namespace turtlelib {
         REQUIRE(is_within_range(normalized_angle));
     }
 
+    TEST_CASE("Normalize a vector", "[normalize]") {
+        Vector2D v{3.0, 4.0};
+        Vector2D vhat = normalize_vector(v);
+        REQUIRE_THAT(vhat.x, Catch::Matchers::WithinRel(0.6));
+        REQUIRE_THAT(vhat.y, Catch::Matchers::WithinRel(0.8));
+        REQUIRE_THAT(vhat.x*vhat.x + vhat.y*vhat.y, Catch::Matchers::WithinRel(1.0));
+    }
+
     TEST_CASE("Normalize angle for -PI", "[normalize]") {
         double normalized_angle = normalize_angle(-PI);
         REQUIRE_THAT(normalized_angle, Catch::Matchers::WithinRel(PI));

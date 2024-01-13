@@ -4,6 +4,12 @@
 #include <ostream>
 #include <iostream>
 namespace turtlelib {
+
+    Vector2D normalize_vector(Vector2D v) {
+        double mag = std::sqrt(v.x*v.x + v.y*v.y);
+        return Vector2D{v.x/mag, v.y/mag};
+    }
+
     // wraps an angle to (-PI, PI]
     double normalize_angle(double rad) {
         rad = std::fmod(rad, 2 * PI);

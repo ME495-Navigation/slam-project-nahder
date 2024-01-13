@@ -101,6 +101,7 @@ namespace turtlelib {
     std::istream & operator>>(std::istream & is, Transform2D & tf) {
         Vector2D v;
         double theta;
+
         char firstChar = is.peek(); 
         if (firstChar == 'd') {
             std::string tmp1, tmp2, tmp3;

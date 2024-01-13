@@ -94,6 +94,11 @@ namespace turtlelib
         double y = 0.0;
     };
 
+    /// \brief a 2-Dimensional Vector
+    /// \param v - the vector to normalize  
+    /// \return a normalized vector
+    Vector2D normalize_vector(Vector2D v);
+
     /// \brief Subtracting one point from another yields a vector
     /// \param head point corresponding to the head of the vector
     /// \param tail point corresponding to the tail of the vector
