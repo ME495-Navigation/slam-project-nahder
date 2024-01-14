@@ -25,8 +25,6 @@ endif()
 
 ament_package()
 
-
- # installing these subdirectories to the package's share directory
 install(DIRECTORY
   config
   launch
