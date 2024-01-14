@@ -15,7 +15,7 @@ namespace turtlelib
         void addPoint(Point2D p,
                       std::string color = "black", float strokeWidth = 5.0, float radius = 3.0);
 
-        void addVector(Point2D head, Point2D tail,
+        void addVector(Point2D tail, Point2D head,
                       std::string color = "black", float strokeWidth = 5.0);
 
         void addCoordinateFrame(Point2D p1, Point2D p2, Point2D p3, Point2D p4,std::string label,

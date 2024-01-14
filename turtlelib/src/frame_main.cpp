@@ -46,15 +46,15 @@ int main(void){
     std::cout << "p_b = " << p_b << std::endl;
     std::cout << "p_c = " << p_c << std::endl;
 
-    svg.addPoint(p_a, "purple", 7.0, 7.0);
-    svg.addPoint(p_b, "brown", 7.0, 7.0);
-    svg.addPoint(p_c, "orange", 7.0, 7.0);
+    svg.addPoint(p_a, "purple", 2.0, 2.0);
+    svg.addPoint(p_b, "brown", 2.0, 2.0);
+    svg.addPoint(p_c, "orange", 2.0, 2.0);
 
     std::cout << "Enter vector v_b:" << std::endl;
     std::cin >> v_b;
     
     turtlelib::Vector2D v_bhat{turtlelib::normalize_vector(v_b)};
-    std::cout << "v_bhat = " << v_bhat << std::endl;
+    std::cout << "v_bhat = " << v_bhat << std::endl; //frame b
 
     v_a = T_ab(v_b);
     v_c = T_cb(v_b);
@@ -62,6 +62,18 @@ int main(void){
     std::cout << "v_a = " << v_a << std::endl;
     std::cout << "v_b = " << v_b << std::endl; 
     std::cout << "v_c = " << v_c << std::endl;
+
+    turtlelib::Point2D tail_b = T_ab(turtlelib::Point2D{0.0, 0.0}); 
+    turtlelib::Point2D head_b = turtlelib::Point2D{tail_b.x + v_bhat.x, tail_b.y + v_bhat.y}; 
+    svg.addVector(tail_b, head_b, "brown", 7.0);
+
+    turtlelib::Point2D tail_a{0.0, 0.0}; 
+    turtlelib::Point2D head_a{tail_a.x + v_a.x, tail_a.y + v_a.y}; 
+    svg.addVector(tail_a, head_a, "purple", 7.0);
+
+    turtlelib::Point2D tail_c = T_ac(turtlelib::Point2D{0.0, 0.0}); 
+    turtlelib::Point2D head_c = turtlelib::Point2D{tail_c.x + v_c.x, tail_c.y + v_c.y}; 
+    svg.addVector(tail_c, head_c, "orange", 7.0);
 
     std::cout << "Enter twist V_b:" << std::endl;
     std::cin >> V_b;

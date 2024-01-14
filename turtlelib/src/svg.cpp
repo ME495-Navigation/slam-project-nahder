@@ -35,15 +35,15 @@ namespace turtlelib
         svgContent += svgElement.str();
     }
 
-    void SVG::addVector(Point2D head, Point2D tail,
+    void SVG::addVector(Point2D tail, Point2D head,
                         std::string color, float strokeWidth)
     {
         head = cvt_svg_to_world(tf_svg_to_world, head);
         tail = cvt_svg_to_world(tf_svg_to_world, tail);
 
         std::ostringstream svgElement;
-        svgElement << "<line x1=\"" << tail.x << "\" y1=\"" << tail.y
-                   << "\" x2=\"" << head.x << "\" y2=\"" << head.y
+        svgElement << "<line x1=\"" << head.x << "\" y1=\"" << head.y
+                   << "\" x2=\"" << tail.x << "\" y2=\"" << tail.y
                    << "\" stroke=\"" << color
                    << "\" stroke-width=\"" << strokeWidth
                    << "\" marker-start=\"url(#Arrow1Sstart)\" />\n";
@@ -61,7 +61,7 @@ namespace turtlelib
         addVector(p1, p2, color1, strokeWidth);
         addVector(p3, p4, color2, strokeWidth);
 
-        Point2D labelPos{p1.x + 0.3, p1.y + 0.3};
+        Point2D labelPos{p1.x + 0.15, p1.y + 0.15};
 
         labelPos = cvt_svg_to_world(tf_svg_to_world, labelPos);
 
