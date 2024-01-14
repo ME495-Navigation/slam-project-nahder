@@ -11,11 +11,12 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(turtlelib REQUIRED)
 
 # add_library(nusim_lib SHARED src/nusim.cpp)
 add_executable(nusim src/nusim.cpp)
-ament_target_dependencies(nusim rclcpp std_msgs turtlelib)
+ament_target_dependencies(nusim turtlelib rclcpp std_msgs std_srvs)
 
 install(TARGETS
   nusim
