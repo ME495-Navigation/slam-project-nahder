@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="8.500000in"
+   height="11.000000in"
+   viewBox="0 0 816.000000 1056.000000"
+   version="1.1"
+   id="svg43"
+   sodipodi:docname="frames.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview45"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="in"
+     showgrid="false"
+     inkscape:zoom="0.7405303"
+     inkscape:cx="408.49105"
+     inkscape:cy="528.67519"
+     inkscape:window-width="1920"
+     inkscape:window-height="956"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg43" />
+  <defs
+     id="defs5">
+    <marker
+       style="overflow:visible"
+       id="Arrow1Sstart"
+       refX="0.0"
+       refY="0.0"
+       orient="auto">
+      <path
+         transform="scale(0.2) translate(6,0)"
+         style="fill-rule:evenodd;fill:context-stroke;stroke:context-stroke;stroke-width:1.0pt"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path2" />
+    </marker>
+  </defs>
+  <line
+     x1="504"
+     y1="528"
+     x2="408"
+     y2="528"
+     stroke="purple"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line7" />
+  <line
+     x1="408"
+     y1="432"
+     x2="408"
+     y2="528"
+     stroke="purple"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line9" />
+  <g
+     id="g13"
+     transform="translate(0,-13.203165)">
+    <text
+       x="422.39999"
+       y="513.59998"
+       fill="#800080"
+       font-size="20px"
+       id="text11">{a}</text>
+  </g>
+  <line
+     x1="654.338"
+     y1="316.8"
+     x2="571.2"
+     y2="364.8"
+     stroke="brown"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line15" />
+  <line
+     x1="523.2"
+     y1="281.662"
+     x2="571.2"
+     y2="364.8"
+     stroke="brown"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line17" />
+  <g
+     id="g21"
+     transform="translate(-7.173913,40.274137)">
+    <text
+       x="585.59998"
+       y="350.39999"
+       fill="#a52a2a"
+       font-size="20px"
+       id="text19">{b}</text>
+  </g>
+  <line
+     x1="616.88"
+     y1="98.32"
+     x2="616.88"
+     y2="194.32"
+     stroke="orange"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line23" />
+  <line
+     x1="520.88"
+     y1="194.32"
+     x2="616.88"
+     y2="194.32"
+     stroke="orange"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line25" />
+  <g
+     id="g29">
+    <text
+       x="631.28"
+       y="179.92"
+       fill="orange"
+       font-size="20"
+       id="text27">{c}</text>
+  </g>
+  <circle
+     cx="600"
+     cy="336"
+     r="5"
+     stroke="purple"
+     fill="purple"
+     stroke-width="3"
+     id="circle31" />
+  <circle
+     cx="447.342"
+     cy="517.458"
+     r="5"
+     stroke="brown"
+     fill="brown"
+     stroke-width="3"
+     id="circle33" />
+  <circle
+     cx="266.32"
+     cy="511.12"
+     r="5"
+     stroke="orange"
+     fill="orange"
+     stroke-width="3"
+     id="circle35" />
+  <line
+     x1="506.33"
+     y1="294.033"
+     x2="571.2"
+     y2="364.8"
+     stroke="brown"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line37" />
+  <line
+     x1="258.948"
+     y1="481.034"
+     x2="408"
+     y2="528"
+     stroke="purple"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line39" />
+  <line
+     x1="663.846"
+     y1="45.2677"
+     x2="616.88"
+     y2="194.32"
+     stroke="orange"
+     stroke-width="5"
+     marker-start="url(#Arrow1Sstart)"
+     id="line41" />
+</svg>
