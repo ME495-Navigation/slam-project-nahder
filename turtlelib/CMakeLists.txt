@@ -28,6 +28,7 @@ if(BUILD_TESTING)
     # Find the Unit testing framework. In this example, Catch2
     find_package(Catch2 3 REQUIRED)
 
+
     # A test is just an executable that is linked against the unit testing library
     add_executable(test_geometry2d tests/test_geometry2d.cpp)
     add_executable(test_se2 tests/test_se2.cpp)
