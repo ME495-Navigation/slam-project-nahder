@@ -23,6 +23,11 @@ public:
                                                            std::bind(&NUSim::reset_callback,
                                                                      this, std::placeholders::_1,
                                                                      std::placeholders::_2));
+
+        teleport_srv = create_service<nusim::srv::Teleport>("~/teleport",
+                                                            std::bind(&NUSim::teleport_callback,
+                                                                      this, std::placeholders::_1,
+                                                                      std::placeholders::_2));
         declare_parameter("rate", 200.0);
         declare_parameter("x0", 0.0);
         declare_parameter("y0", 0.0);
@@ -42,6 +47,7 @@ private:
     rclcpp::TimerBase::SharedPtr timer;
     rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_srv;
+    rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
     geometry_msgs::msg::TransformStamped xform_stamped;
     tf2::Quaternion q;
@@ -78,6 +84,18 @@ private:
         cur_x = x0, cur_y = y0, cur_theta = theta0, timestep = 0;
         response->success = true;
     }
+
+    void teleport_callback(const std::shared_ptr<nusim::srv::Teleport::Request> request,
+                           std::shared_ptr<nusim::srv::Teleport::Response> response)
+    {
+        RCLCPP_INFO_STREAM(this->get_logger(), 
+            "teleporting to " << request->x << ", " << request->y << ", " << request->theta);
+            
+        cur_x = request->x, cur_y = request->y, cur_theta = request->theta;
+        response->success = true;
+    }
+
+    
     
 };
 
