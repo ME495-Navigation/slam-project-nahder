@@ -17,9 +17,10 @@ find_package(turtlelib REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 add_executable(nusim src/nusim.cpp)
-ament_target_dependencies(nusim turtlelib rclcpp std_msgs std_srvs tf2 tf2_ros)
+ament_target_dependencies(nusim turtlelib rclcpp std_msgs std_srvs tf2 tf2_ros visualization_msgs)
 
 install(TARGETS
   nusim
@@ -32,10 +33,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-rosidl_generate_interfaces(${PROJECT_NAME}_interfaces 
-  "srv/Teleport.srv" 
+rosidl_generate_interfaces(${PROJECT_NAME}_interfaces   
+"srv/Teleport.srv" 
+LIBRARY_NAME ${PROJECT_NAME}
 )
+
 #TODO: cite https://robotics.stackexchange.com/questions/23171/creating-a-custom-msg-in-ros2
+#TODO: https://answers.ros.org/question/318938/rclcppexceptionsrclerror/
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}_interfaces 
   "rosidl_typesupport_cpp"
 )
