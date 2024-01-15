@@ -41,9 +41,9 @@ public:
         declare_parameter("arena_x_length", 10.0);
         declare_parameter("arena_y_length", 10.0);
 
-        declare_parameter("obstacles_x", std::vector<double>{1.0, 2.0, 3.0});
-        declare_parameter("obstacles_y", std::vector<double>{1.0, 2.0, 3.0});
-        declare_parameter("obstacle_r", 0.5);
+        declare_parameter("obstacles.x", std::vector<double>{1.0, 2.0, 3.0});
+        declare_parameter("obstacles.y", std::vector<double>{1.0, 2.0, 3.0});
+        declare_parameter("obstacles.r", 0.5);
 
         rate = get_parameter("rate").as_double();
         x0 = get_parameter("x0").as_double();
@@ -52,9 +52,9 @@ public:
         arena_x_length = get_parameter("arena_x_length").as_double();
         arena_y_length = get_parameter("arena_y_length").as_double();
 
-        obstacles_x = get_parameter("obstacles_x").as_double_array();
-        obstacles_y = get_parameter("obstacles_y").as_double_array();
-        obstacle_r = get_parameter("obstacle_r").as_double();
+        obstacles_x = get_parameter("obstacles.x").as_double_array();
+        obstacles_y = get_parameter("obstacles.y").as_double_array();
+        obstacle_r = get_parameter("obstacles.r").as_double();
 
         cur_x = x0, cur_y = y0, cur_theta = theta0;
 

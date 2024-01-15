@@ -48,6 +48,8 @@ target_link_libraries(nusim "${cpp_typesupport_target}")
 
 install(DIRECTORY
   srv
+  launch
+  config
   DESTINATION share/${PROJECT_NAME}
 )
 
