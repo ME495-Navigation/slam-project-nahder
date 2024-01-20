@@ -2,9 +2,10 @@
 A library for handling transformations in SE(2) and other turtlebot-related math.
 
 # Components
-- geometry2d - Handles 2D geometry primitives
-- se2d - Handles 2D rigid body transformations
-- frame_main - Perform some rigid body computations based on user input
+- `geometry2d`: handles 2D geometry primitives
+- `se2d`: handles 2D rigid body transformations
+- `svg`: draws points, vectors, and frames in a .svg file
+- `frame_main` (executable): performs some rigid body computations based on user input
 
 # Conceptual Questions
 ##### 1. If you needed to be able to normalize Vector2D objects (i.e., find the unit vector in the direction of a given Vector2D):
@@ -35,7 +36,7 @@ Transform2D on the other hand has private fields which should not be handled lig
 Single argument constructors are expected to be explicit (C.46) in order to prevent unintended conversions. If the constructor is not explicit, things like function parameters could accidentally be converted to class objects if if the type of the argument matches the constructor's single parameter.
 
 
-#####5. Why is Transform2D::inv() declared const while Transform2D::operator*=() is not?
+##### 5. Why is Transform2D::inv() declared const while Transform2D::operator*=() is not?
    - Refer to [[https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#con-constants-and-immutability][C++ Core Guidelines (Constants and Immutability)]] in your answer
 
 A const function cannot modify the internal state of an object unless it has mutable fields. Transform2D::inv() does not modify the current object, but rather, a copy of it. Transform2D::operator*=() *does* modify the object's current fields, so it cannot be const.

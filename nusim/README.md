@@ -27,7 +27,7 @@ This library initializes a simulated environment for a Turtlebot3 robot. It uses
 | `obstacles.y`     | std::vector\<double> | Obstacle y-coordinates              | m      |
 
 # Environment
-
+![nusim1](https://github.com/ME495-Navigation/slam-project-nahder/assets/71537050/f6ab4d83-4758-4d8e-964a-48f95da48903)
 
 # Citations
 
