@@ -3,9 +3,7 @@
 /// \file
 /// \brief Two-dimensional rigid body transformations.
 
-
 #include<iosfwd> // contains forward definitions for iostream objects
-
 #include"turtlelib/geometry2d.hpp"
 
 namespace turtlelib

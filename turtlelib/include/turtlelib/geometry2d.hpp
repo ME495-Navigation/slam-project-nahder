@@ -123,19 +123,6 @@ namespace turtlelib
     ///   [x y] or x y
     /// \param is - stream from which to read
     /// \param v [out] - output vector
-    /// Hint: The following may be useful:
-    /// https://en.cppreference.com/w/cpp/io/basic_istream/peek
-    /// https://en.cppreference.com/w/cpp/io/basic_istream/get
-    ///
-    /// The way input works is (more or less): what the user types is stored in a buffer until the user enters
-    /// a newline (by pressing enter).  The iostream methods then process the data in this buffer character by character.
-    /// Typically, each character is examined and then removed from the buffer automatically.
-    /// If the characters don't match what is expected (e.g., we are expecting an int but the letter 'q' is encountered)
-    /// an error flag is set on the stream object (e.g., std::cin).
-    ///
-    /// We have lower level control however. For example:
-    /// peek looks at the next unprocessed character in the buffer without removing it
-    /// get removes the next unprocessed character from the buffer.
     std::istream & operator>>(std::istream & is, Vector2D & v);
 }
 

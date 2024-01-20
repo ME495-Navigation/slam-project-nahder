@@ -174,19 +174,19 @@ private:
     walls.markers.push_back(
       create_wall(
         0, x_length + 2 * wall_thickness, wall_thickness,
-        0, -y_length / 2 - wall_thickness / 2));                                     // bottom
+        0, -y_length / 2 - wall_thickness / 2));           
     walls.markers.push_back(
       create_wall(
         1, x_length + 2 * wall_thickness, wall_thickness,
-        0, y_length / 2 + wall_thickness / 2));                                     // top
+        0, y_length / 2 + wall_thickness / 2));                                    
     walls.markers.push_back(
       create_wall(
         2, wall_thickness, y_length + 2 * wall_thickness,
-        -x_length / 2 - wall_thickness / 2, 0));                                     // left
+        -x_length / 2 - wall_thickness / 2, 0));                                     
     walls.markers.push_back(
       create_wall(
         3, wall_thickness, y_length + 2 * wall_thickness,
-        x_length / 2 + wall_thickness / 2, 0));                                     // right
+        x_length / 2 + wall_thickness / 2, 0));                                    
 
     return walls;
   }
