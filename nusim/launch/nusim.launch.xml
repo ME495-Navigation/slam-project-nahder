@@ -20,9 +20,4 @@
   
   <node pkg="rviz2" exec="rviz2" args="-d $(var red_config)"/>
 
-
-
-
-
-
 </launch>
