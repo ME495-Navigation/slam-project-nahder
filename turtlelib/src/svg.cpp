@@ -1,4 +1,3 @@
-
 #include "turtlelib/se2d.hpp"
 #include "turtlelib/geometry2d.hpp"
 #include "turtlelib/svg.hpp"
@@ -9,7 +8,6 @@
 #include <fstream>
 namespace turtlelib
 {
-    // define constructor member functions, uniform initialization
     SVG::SVG()
     {
         std::ostringstream svgHeader;
@@ -35,8 +33,9 @@ namespace turtlelib
         svgContent += svgElement.str();
     }
 
-    void SVG::addVector(Point2D tail, Point2D head,
-                        std::string color, float strokeWidth)
+    void SVG::addVector(
+        Point2D tail, Point2D head,
+        std::string color, float strokeWidth)
     {
         head = cvt_svg_to_world(tf_svg_to_world, head);
         tail = cvt_svg_to_world(tf_svg_to_world, tail);
@@ -51,9 +50,10 @@ namespace turtlelib
         svgContent += svgElement.str();
     }
 
-    void SVG::addCoordinateFrame(Point2D p1, Point2D p2, Point2D p3, Point2D p4,
-                                 std::string label, std::string color1,
-                                 std::string color2, float strokeWidth)
+    void SVG::addCoordinateFrame(
+        Point2D p1, Point2D p2, Point2D p3, Point2D p4,
+        std::string label, std::string color1,
+        std::string color2, float strokeWidth)
     {
         std::ostringstream svgElement;
         svgElement << "<g>\n";
@@ -74,19 +74,22 @@ namespace turtlelib
         svgContent += "</g>\n";
     }
 
-    void SVG::draw_xform(Transform2D tf, std::string label,
-                        std::string color, float strokeWidth) {
+    void SVG::draw_xform(
+        Transform2D tf, std::string label,
+        std::string color, float strokeWidth)
+    {
         Point2D origin{0.0, 0.0};
-        Point2D p_x_axis{1.0, 0.0}; 
-        Point2D p_y_axis{0.0, 1.0}; 
+        Point2D p_x_axis{1.0, 0.0};
+        Point2D p_y_axis{0.0, 1.0};
 
         Point2D transformed_origin = tf(origin);
         Point2D transformed_p_x_axis = tf(p_x_axis);
         Point2D transformed_p_y_axis = tf(p_y_axis);
 
-        addCoordinateFrame(transformed_origin, transformed_p_x_axis, 
-                        transformed_origin, transformed_p_y_axis, 
-                        label, color, color, strokeWidth);
+        addCoordinateFrame(
+            transformed_origin, transformed_p_x_axis,
+            transformed_origin, transformed_p_y_axis,
+            label, color, color, strokeWidth);
     }
 
     Point2D SVG::cvt_svg_to_world(const Transform2D &tf, Point2D p)

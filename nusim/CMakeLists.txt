@@ -20,13 +20,13 @@ find_package(visualization_msgs REQUIRED)
 add_executable(nusim src/nusim.cpp)
 
 ament_target_dependencies(
-nusim
-turtlelib
-rclcpp std_msgs
-std_srvs
-tf2
-tf2_ros
-visualization_msgs
+  nusim
+  turtlelib
+  rclcpp std_msgs
+  std_srvs
+  tf2
+  tf2_ros
+  visualization_msgs
 )
 
 install(TARGETS
@@ -35,6 +35,7 @@ install(TARGETS
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 
