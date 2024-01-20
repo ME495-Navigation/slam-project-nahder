@@ -6,7 +6,7 @@ This library initializes a simulated environment for a Turtlebot3 robot. It uses
 - `reset`: Restores the initial simulation state
 
 # Launching
-- To get started, run the command: `ros2 launch nusim nusim.launch.xml`. This:
+- To get started, run the command `ros2 launch nusim nusim.launch.xml`. This:
   - opens `rviz2` with the appropriate configuration file `red_config.rviz`
   - initializes the world environment with properties defined in `basic_world.yaml`
   - sets the robot prpoerties defined in `diff_params.yaml`

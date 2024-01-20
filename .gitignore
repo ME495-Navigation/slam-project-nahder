@@ -9,7 +9,7 @@ devel/
 *~
 *.swp
 *.tmp
-
+*.cfg
 # Ignore cache files and folders
 .cache/
 *.cache
