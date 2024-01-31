@@ -12,6 +12,66 @@ namespace turtlelib
         return Vector2D{v.x / mag, v.y / mag};
     }
 
+    Vector2D & Vector2D::operator+=(const Vector2D & rhs_v)
+    {
+        this->x += rhs_v.x;
+        this->y += rhs_v.y;
+        return *this;
+    }
+
+    Vector2D operator+(Vector2D lhs, const Vector2D &rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    Vector2D & Vector2D::operator-=(const Vector2D & rhs_v)
+    {
+        this->x -= rhs_v.x;
+        this->y -= rhs_v.y;
+        return *this;
+    }
+
+    Vector2D operator-(Vector2D lhs, const Vector2D &rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    Vector2D & Vector2D::operator*=(const double & rhs)
+    {
+        this->x *= rhs;
+        this->y *= rhs;
+        return *this;
+    }
+
+    Vector2D operator*(Vector2D lhs, const double &rhs)
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    Vector2D operator*(const double &lhs, Vector2D rhs)
+    {
+        rhs *= lhs;
+        return rhs;
+    }
+
+    double dot(Vector2D v1, Vector2D v2)
+    {
+        return v1.x * v2.x + v1.y * v2.y;
+    }
+
+    double magnitude(Vector2D v)
+    {
+        return std::sqrt(v.x * v.x + v.y * v.y);
+    }
+
+    double angle(Vector2D v1, Vector2D v2)
+    {
+        return std::acos(dot(v1, v2) / (magnitude(v1) * magnitude(v2)));
+    }
+
     // wraps an angle to (-PI, PI]
     double normalize_angle(double rad)
     {

@@ -92,7 +92,28 @@ namespace turtlelib
 
         /// \brief the y coordinate
         double y = 0.0;
+
+        Vector2D& operator+=(const Vector2D& rhs);
+
+        Vector2D& operator-=(const Vector2D& rhs);
+
+        Vector2D& operator*=(const double& rhs);
+
     };
+
+    Vector2D operator+(Vector2D lhs, const Vector2D &rhs);
+
+    Vector2D operator-(Vector2D lhs, const Vector2D &rhs);
+
+    Vector2D operator*(Vector2D lhs, const double &rhs);
+
+    Vector2D operator*(const double &lhs, Vector2D rhs);
+    
+    double dot(Vector2D v1, Vector2D v2);
+
+    double magnitude(Vector2D v); 
+
+    double angle(Vector2D v1, Vector2D v2);
 
     /// \brief a 2-Dimensional Vector
     /// \param v - the vector to normalize  
@@ -124,6 +145,7 @@ namespace turtlelib
     /// \param is - stream from which to read
     /// \param v [out] - output vector
     std::istream & operator>>(std::istream & is, Vector2D & v);
+
 }
 
 #endif
