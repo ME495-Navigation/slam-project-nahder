@@ -37,7 +37,7 @@ if(BUILD_TESTING)
 
 endif()
 
-add_library(turtlelib src/geometry2d.cpp src/se2.cpp src/svg.cpp)
+add_library(turtlelib src/geometry2d.cpp src/se2.cpp src/svg.cpp src/diff_drive.cpp)
 
 add_executable(frame_main src/frame_main.cpp)
 
