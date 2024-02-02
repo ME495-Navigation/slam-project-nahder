@@ -180,6 +180,37 @@ namespace turtlelib {
         REQUIRE_THAT(xform3.rotation(), Catch::Matchers::WithinAbs(-0.330953, 1e-5));
     }
 
+    TEST_CASE("integrate_twist, pure translation", "[integrate_twist]") {
+        Twist2D twist{0.0, 3.3, -1.1};
+        Transform2D result = integrate_twist(twist);
+
+        REQUIRE_THAT(result.translation().x, Catch::Matchers::WithinAbs(twist.x, 1e-5));
+        REQUIRE_THAT(result.translation().y, Catch::Matchers::WithinAbs(twist.y, 1e-5));
+        REQUIRE_THAT(result.rotation(), Catch::Matchers::WithinAbs(twist.omega, 1e-5));
+    }
+
+    TEST_CASE("integrate twist, pure rotation", "[integrate_twist]") {
+        Twist2D twist{PI / 4, 0.0, 0.0};
+        Transform2D result = integrate_twist(twist);
+
+        REQUIRE_THAT(result.translation().x, Catch::Matchers::WithinAbs(0.0, 1e-5));
+        REQUIRE_THAT(result.translation().y, Catch::Matchers::WithinAbs(0.0, 1e-5));
+        REQUIRE_THAT(result.rotation(), Catch::Matchers::WithinAbs(PI / 4, 1e-5));
+    }
+
+    TEST_CASE("integrate twist, both rotation and translation", "[integrate_twist]") {
+        Twist2D twist{PI/2, 3.0, 4.0};
+        Transform2D result = integrate_twist(twist);
+    
+        REQUIRE_THAT(result.translation().x, Catch::Matchers::WithinAbs(-0.63661, 1e-5));
+        REQUIRE_THAT(result.translation().y, Catch::Matchers::WithinAbs(4.45633, 1e-5));
+        REQUIRE_THAT(result.rotation(), Catch::Matchers::WithinAbs(twist.omega, 1e-5));
+    }
+    
+
+
+
+
 
 
 }

@@ -93,9 +93,17 @@ namespace turtlelib
         /// \brief the y coordinate
         double y = 0.0;
 
+        /// @brief add a vector to this vector
+        /// @param rhs 
+        /// @return the sum of this vector and rhs
         Vector2D& operator+=(const Vector2D& rhs);
 
+
+        /// @brief subtract a vector from this vector
+        /// @param rhs 
+        /// @return the difference of this vector and rhs
         Vector2D& operator-=(const Vector2D& rhs);
+
 
         Vector2D& operator*=(const double& rhs);
 

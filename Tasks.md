@@ -22,6 +22,8 @@
 - [x] B.5 (visualization)
 - [x] B.6 (executable implementation)
 - [x] B.7 (conceptual questions)
+- [x] B.8 (vector operations) 
+- [ ] B.9 (integrate a twist) 
 
 #### Task C (The Simulator) 
 - [x] C.1 (nusim package)
@@ -30,4 +32,22 @@
 - [x] C.4 (walls)
 - [x] C.5 (cylindrical obstacles)
 - [x] C.6 (nusim launch)
-- [x] C.7 (README.md) 
+- [ ] C.7 (turtle drive) 
+
+#### Task D (Kinematics) 
+- [ ] D.1 (Diffdrive class) 
+- [ ] D.2 (Diffdrive test) 
+- [ ] D.3 (Documentation) 
+
+#### Task E (Robot control) 
+- [ ] E.1 (Turtle interface) 
+- [ ] E.2 (Odometry node) 
+- [ ] E.3 (Circle) 
+- [ ] E.4 (ROS API Testing) 
+- [ ] E.5 (Launchfile) 
+- [ ] E.6 (Remote Launch) 
+
+#### Task F (The real robot) 
+- [ ] F.1 (Turtlebot setup) 
+- [ ] F.2 (Cross-compilation)
+- [ ] F.5 (Physical testing)

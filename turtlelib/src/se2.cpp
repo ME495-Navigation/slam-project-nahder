@@ -146,4 +146,30 @@ namespace turtlelib
         return lhs;
     }
 
+    // compute the transformation corresponding to a rigid body following a constant twist (in its
+    // body frame) for 1 time unit. 
+    // using 1 time unit lets us integrate for arbitrary time lengths by scaling 
+    // twist: omega, x, y ( velocities in the body frame)
+    Transform2D integrate_twist(const Twist2D & tw) 
+    {
+        if (almost_equal(tw.omega, 0.0)) { //zero angular displacement => pure translation
+            return Transform2D{Vector2D{tw.x, tw.y}, 0.0};
+
+        } else {
+            //find the center of rotation in {s}, aligned with {b} frame
+            auto x_s = tw.y / tw.omega;
+            auto y_s = -tw.x / tw.omega;
+
+            //transform from {b} -> {s} 
+            Transform2D T_sb{Vector2D{x_s, y_s}}; 
+
+            //perform the rotation in the new frame {s'}
+            Transform2D T_s_sp{tw.omega}; 
+
+            //T_s'b' = T_sb since T_bs and T_b's' are pure translations from p to the body frame
+            return T_sb.inv() * T_s_sp * T_sb;
+        }
+    }
+
+
 }
