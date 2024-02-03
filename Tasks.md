@@ -23,7 +23,8 @@
 - [x] B.6 (executable implementation)
 - [x] B.7 (conceptual questions)
 - [x] B.8 (vector operations) 
-- [ ] B.9 (integrate a twist) 
+- [x] B.9 (integrate a twist) 
+- [ ] B._ (doxygen comments!)
 
 #### Task C (The Simulator) 
 - [x] C.1 (nusim package)
@@ -35,8 +36,8 @@
 - [ ] C.7 (turtle drive) 
 
 #### Task D (Kinematics) 
-- [ ] D.1 (Diffdrive class) 
-- [ ] D.2 (Diffdrive test) 
+- [x] D.1 (Diffdrive class) 
+- [x] D.2 (Diffdrive test) 
 - [ ] D.3 (Documentation) 
 
 #### Task E (Robot control) 

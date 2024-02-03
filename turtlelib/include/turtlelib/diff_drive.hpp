@@ -5,15 +5,14 @@
 
 namespace turtlelib { 
 
-    //robot configuration
+    /// @brief robot configuration
     struct robotConfig { 
         double x{0.0};
         double y{0.0};
         double theta{0.0};
     };
 
-    //wheel velocities
-    //the wheel velocities are in terms of unit 1 unit time
+    /// @brief wheel velocities
     struct wheelVel {
         double left_wheel_vel{0.0};
         double right_wheel_vel{0.0};
@@ -22,24 +21,40 @@ namespace turtlelib {
     class DiffDrive {
 
     public:
+        /// @brief diff drive constructor
+        /// @param wheel_radius 
+        /// @param track_width 
         DiffDrive(double wheel_radius, double track_width);
-        //fk: determine the POSITION of the robot based on the known wheel motion
-        //update the current configuration
+  
+
+        /// @brief forward kinematics. update robot configuration given wheel motion
+        /// @param new_wheel_config 
         void forwardKinematics(const wheelVel new_wheel_config);
 
         //ik: compute the wheel velocities required to achieve a desired twist
+        
+        /// @brief inverse kinematics. compute the wheel velocities required to achieve a desired twist
+        /// @param twist 
+        /// @return wheelVel object with left and right wheel velocities
         wheelVel inverseKinematics(const Twist2D twist) const;
 
         //convert wheel velocities to actual body twis
+        
+        /// @brief convert wheel velocities to actual body twist
+        /// @param u 
+        /// @return Twist2D object of {omega, xDot, yDot}
         Twist2D computeBodyTwist(const wheelVel u) const;
 
+        /// @brief getter for robot configuration
+        /// @return robotConfig object of {x,y,theta}
         robotConfig get_config() const { return cur_config; }
 
     private:
         robotConfig cur_config;
         wheelVel cur_wheel_vel; 
 
-        double wheel_radius{0.033}; //defaults for turtlebot3 burger
+        //defaults for turtlebot3 burger
+        double wheel_radius{0.033}; 
         double track_width{0.16};
     };
 
