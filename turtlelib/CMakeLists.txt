@@ -26,14 +26,17 @@ if(BUILD_TESTING)
     add_executable(test_geometry2d tests/test_geometry2d.cpp)
     add_executable(test_se2 tests/test_se2.cpp)
     add_executable(test_svg tests/test_svg.cpp)
+    add_executable(test_diff_drive tests/test_diff_drive.cpp)
 
     target_link_libraries(test_geometry2d turtlelib Catch2::Catch2WithMain)
     target_link_libraries(test_se2 turtlelib Catch2::Catch2WithMain)
     target_link_libraries(test_svg turtlelib Catch2::Catch2WithMain)
+    target_link_libraries(test_diff_drive turtlelib Catch2::Catch2WithMain)
 
     add_test(NAME Test_Geometry2D COMMAND test_geometry2d)
     add_test(NAME Test_SE2 COMMAND test_se2)
     add_test(NAME Test_SVG COMMAND test_svg)
+    add_test(NAME Test_Diff_Drive COMMAND test_diff_drive)
 
 endif()
 
@@ -60,3 +63,5 @@ install(EXPORT turtlelib-targets
         FILE turtlelib-config.cmake
         NAMESPACE turtlelib::
         DESTINATION lib/cmake/${PROJECT_NAME})  
+
+        
