@@ -11,6 +11,7 @@ include_directories(${rclcpp_INCLUDE_DIRS})
 find_package(rclcpp REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(nuturtlebot_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
 
@@ -21,6 +22,7 @@ ament_target_dependencies(
   rclcpp 
   std_msgs 
   geometry_msgs 
+  sensor_msgs
   nuturtlebot_msgs
   turtlelib
 )

@@ -1,8 +1,11 @@
 #include <cstdio>
+#include <algorithm>
 #include "rclcpp/rclcpp.hpp"
 #include "turtlelib/diff_drive.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
+#include "nuturtlebot_msgs/msg/sensor_data.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 
 using namespace std::chrono_literals;
 
@@ -17,6 +20,7 @@ public:
     declare_parameter("motor_cmd_per_rad_sec", 0.0);
     declare_parameter("encoder_ticks_per_rad", 0.0);
     declare_parameter("collision_radius", 0.0);
+    check_params();
 
     // Assign parameter values to member variables
     wheel_radius = get_parameter("wheel_radius").as_double();
@@ -26,51 +30,109 @@ public:
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
     collision_radius = get_parameter("collision_radius").as_double();
 
-    turtleBot = turtlelib::DiffDrive(wheel_radius, track_width);  
+    turtleBot = turtlelib::DiffDrive(wheel_radius, track_width);
 
     cmd_vel_sub = create_subscription<geometry_msgs::msg::Twist>(
-      "cmd_vel", 10, std::bind(&TurtleControl::cmd_vel_callback, this, std::placeholders::_1));
+        "cmd_vel", 10, std::bind(&TurtleControl::cmd_vel_callback, this, std::placeholders::_1));
+
+    sensor_data_sub = create_subscription<nuturtlebot_msgs::msg::SensorData>(
+        "sensor_data", 10, std::bind(&TurtleControl::sensor_data_callback, this, std::placeholders::_1));
 
     wheel_cmd_pub = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("/wheel_cmd", 10);
 
-    check_params();
+    joint_states_pub = create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
   }
 
 private:
-  double wheel_radius, track_width, motor_cmd_max, motor_cmd_per_rad_sec, 
-  encoder_ticks_per_rad, collision_radius;
+  double wheel_radius, track_width, motor_cmd_max, motor_cmd_per_rad_sec,
+      encoder_ticks_per_rad, collision_radius;
+
+  double prev_sensor_time{-1.0};
+  double left_prev{0.0}, right_prev{0.0};
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub;
+  rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_sub;
   rclcpp::Publisher<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_cmd_pub;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_states_pub;
 
-  nuturtlebot_msgs::msg::WheelCommands wheelMsg;
   turtlelib::DiffDrive turtleBot;
 
   void check_params()
   {
-    if (wheel_radius == 0.0 || track_width == 0.0 || motor_cmd_max == 0.0 || 
+    if (wheel_radius == 0.0 || track_width == 0.0 || motor_cmd_max == 0.0 ||
         motor_cmd_per_rad_sec == 0.0 || encoder_ticks_per_rad == 0.0 || collision_radius == 0.0)
     {
       RCLCPP_ERROR(this->get_logger(), "Missing parameter(s)");
-      // rclcpp::shutdown(); uncomment after params loaded into param server
+      rclcpp::shutdown(); 
     }
   }
 
-  void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr twist)
+  /// @brief clamps a value between a min and max
+  /// @param value
+  /// @param min
+  /// @param max
+  /// @return clamped value
+  double clamp(double value, double min, double max)
   {
-    //TODO
-    // takes a cmd_vel and converts it to wheel commands of type nuturtlebot_msgs::msg::WheelCommands
-    // publishes it to /wheel_cmd for the turtlebot to execute
-
-    //twist consists of omegaDot, xDot, yDot
-    
-    //inverse kinematics returns the wheel velocities given a desired robot twist 
-
-    
+    return std::clamp(value, min, max);
   }
 
+  /// @brief takes in a body twist and publishes wheel vel commands to /wheel_cmd
+  /// @param geometry_msg type twist
+  void cmd_vel_callback(const geometry_msgs::msg::Twist &twist)
+  {
+    // convert geometry msg twist to Twist2D twist
+    turtlelib::Twist2D tw{twist.angular.z, twist.linear.x, twist.linear.y};
 
+    // convert Twist2D twist to wheelVel u
+    turtlelib::wheelVel u = turtleBot.inverseKinematics(tw);
+    u.left_wheel_vel /= motor_cmd_per_rad_sec;
+    u.right_wheel_vel /= motor_cmd_per_rad_sec;
 
+    // clamp wheel velocities
+    u.left_wheel_vel = clamp(u.left_wheel_vel, -motor_cmd_max, motor_cmd_max);
+    u.right_wheel_vel = clamp(u.right_wheel_vel, -motor_cmd_max, motor_cmd_max);
+
+    // convert wheelVel u to nuturtlebot_msgs::msg::WheelCommands wheelMsg
+    nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
+    wheel_cmd_msg.left_velocity = u.left_wheel_vel;
+    wheel_cmd_msg.right_velocity = u.right_wheel_vel;
+
+    // publish wheelMsg
+    wheel_cmd_pub->publish(wheel_cmd_msg);
+  }
+
+  /// @brief takes in wheel encoder readings and publishes joint states to /joint_states
+  /// @param sensor_data
+  void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData &msg)
+  {
+    auto current_time = msg.stamp.sec + msg.stamp.nanosec * 1e-9;
+    double left_position = static_cast<double>(msg.left_encoder) / encoder_ticks_per_rad;
+    double right_position = static_cast<double>(msg.right_encoder) / encoder_ticks_per_rad;
+    double elapsed_time{0.0};
+    double left_velocity{0.0};
+    double right_velocity{0.0};
+
+    // check if not the first message
+    if (prev_sensor_time >= 0.0)
+    {
+      elapsed_time = current_time - prev_sensor_time;
+      left_velocity = (left_position - left_prev) / elapsed_time;
+      right_velocity = (right_position - right_prev) / elapsed_time;
+    }
+
+    // update the prevs for next iteration
+    left_prev = left_position;
+    right_prev = right_position;
+    prev_sensor_time = current_time;
+
+    sensor_msgs::msg::JointState joint_states_msg;
+    joint_states_msg.header.stamp = msg.stamp;
+    joint_states_msg.name = {"wheel_left_joint", "wheel_right_joint"};
+    joint_states_msg.position = {left_position, right_position};
+    joint_states_msg.velocity = {left_velocity, right_velocity};
+    joint_states_pub->publish(joint_states_msg);
+  }
 };
 
 int main(int argc, char *argv[])
