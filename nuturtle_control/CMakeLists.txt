@@ -11,17 +11,18 @@ include_directories(${rclcpp_INCLUDE_DIRS})
 find_package(rclcpp REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
-# find_package(turtlelib REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
-
+find_package(nuturtlebot_msgs REQUIRED)
+find_package(turtlelib REQUIRED)
 
 add_executable(turtle_control src/turtle_control.cpp)
 
 ament_target_dependencies(
   turtle_control
-  rclcpp std_msgs
+  rclcpp 
+  std_msgs 
+  geometry_msgs 
+  nuturtlebot_msgs
+  turtlelib
 )
 
 target_include_directories(turtle_control PUBLIC
@@ -31,6 +32,8 @@ target_compile_features(turtle_control PUBLIC c_std_99 cxx_std_17)  # Require C9
 
 install(TARGETS turtle_control
   DESTINATION lib/${PROJECT_NAME})
+
+target_link_libraries(turtle_control turtlelib::turtlelib)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

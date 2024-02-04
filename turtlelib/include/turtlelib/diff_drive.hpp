@@ -29,6 +29,8 @@ namespace turtlelib
         /// @param wheel_radius
         /// @param track_width
         DiffDrive(double wheel_radius, double track_width);
+        
+        DiffDrive(); // default constructor
 
         /// @brief forward kinematics. update robot configuration given wheel motion
         /// @param new_wheel_config
@@ -52,13 +54,15 @@ namespace turtlelib
         /// @return robotConfig object of {x,y,theta}
         robotConfig get_config() const { return cur_config; }
 
+        
+
     private:
         robotConfig cur_config;
         wheelVel cur_wheel_vel;
 
         // defaults for turtlebot3 burger
-        double wheel_radius{0.033};
-        double track_width{0.16};
+        double wheel_radius;
+        double track_width;
     };
 
 }

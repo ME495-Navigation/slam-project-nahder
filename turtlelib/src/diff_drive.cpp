@@ -5,6 +5,8 @@
 
 namespace turtlelib
 {
+    
+    DiffDrive::DiffDrive() : wheel_radius(0.033), track_width(0.16) {}
 
     DiffDrive::DiffDrive(double wheel_radius, double track_width)
         : wheel_radius(wheel_radius), track_width(track_width) {}

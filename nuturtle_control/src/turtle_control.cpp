@@ -1,5 +1,8 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
+#include "turtlelib/diff_drive.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 
 using namespace std::chrono_literals;
 
@@ -23,6 +26,13 @@ public:
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
     collision_radius = get_parameter("collision_radius").as_double();
 
+    turtleBot = turtlelib::DiffDrive(wheel_radius, track_width);  
+
+    cmd_vel_sub = create_subscription<geometry_msgs::msg::Twist>(
+      "cmd_vel", 10, std::bind(&TurtleControl::cmd_vel_callback, this, std::placeholders::_1));
+
+    wheel_cmd_pub = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("/wheel_cmd", 10);
+
     check_params();
   }
 
@@ -30,6 +40,11 @@ private:
   double wheel_radius, track_width, motor_cmd_max, motor_cmd_per_rad_sec, 
   encoder_ticks_per_rad, collision_radius;
 
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub;
+  rclcpp::Publisher<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_cmd_pub;
+
+  nuturtlebot_msgs::msg::WheelCommands wheelMsg;
+  turtlelib::DiffDrive turtleBot;
 
   void check_params()
   {
@@ -40,6 +55,21 @@ private:
       // rclcpp::shutdown(); uncomment after params loaded into param server
     }
   }
+
+  void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr twist)
+  {
+    //TODO
+    // takes a cmd_vel and converts it to wheel commands of type nuturtlebot_msgs::msg::WheelCommands
+    // publishes it to /wheel_cmd for the turtlebot to execute
+
+    //twist consists of omegaDot, xDot, yDot
+    
+    //inverse kinematics returns the wheel velocities given a desired robot twist 
+
+    
+  }
+
+
 
 };
 
