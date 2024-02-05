@@ -22,7 +22,6 @@ public:
     declare_parameter("collision_radius", 0.0);
     check_params();
 
-    // Assign parameter values to member variables
     wheel_radius = get_parameter("wheel_radius").as_double();
     track_width = get_parameter("track_width").as_double();
     motor_cmd_max = get_parameter("motor_cmd_max").as_double();
@@ -62,19 +61,9 @@ private:
     if (wheel_radius == 0.0 || track_width == 0.0 || motor_cmd_max == 0.0 ||
         motor_cmd_per_rad_sec == 0.0 || encoder_ticks_per_rad == 0.0 || collision_radius == 0.0)
     {
-      RCLCPP_ERROR(this->get_logger(), "Missing parameter(s)");
-      rclcpp::shutdown(); 
+      RCLCPP_ERROR_STREAM(this->get_logger(), "Missing turtle_control parameter(s). Exiting...");
+      rclcpp::shutdown();
     }
-  }
-
-  /// @brief clamps a value between a min and max
-  /// @param value
-  /// @param min
-  /// @param max
-  /// @return clamped value
-  double clamp(double value, double min, double max)
-  {
-    return std::clamp(value, min, max);
   }
 
   /// @brief takes in a body twist and publishes wheel vel commands to /wheel_cmd
@@ -90,8 +79,8 @@ private:
     u.right_wheel_vel /= motor_cmd_per_rad_sec;
 
     // clamp wheel velocities
-    u.left_wheel_vel = clamp(u.left_wheel_vel, -motor_cmd_max, motor_cmd_max);
-    u.right_wheel_vel = clamp(u.right_wheel_vel, -motor_cmd_max, motor_cmd_max);
+    u.left_wheel_vel = std::clamp(u.left_wheel_vel, -motor_cmd_max, motor_cmd_max);
+    u.right_wheel_vel = std::clamp(u.right_wheel_vel, -motor_cmd_max, motor_cmd_max);
 
     // convert wheelVel u to nuturtlebot_msgs::msg::WheelCommands wheelMsg
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;
@@ -114,7 +103,7 @@ private:
     double right_velocity{0.0};
 
     // check if not the first message
-    if (prev_sensor_time >= 0.0)
+    if (prev_sensor_time > 0.0)
     {
       elapsed_time = current_time - prev_sensor_time;
       left_velocity = (left_position - left_prev) / elapsed_time;
@@ -129,9 +118,9 @@ private:
     sensor_msgs::msg::JointState joint_states_msg;
     joint_states_msg.header.stamp = msg.stamp;
     joint_states_msg.name = {"wheel_left_joint", "wheel_right_joint"};
-    joint_states_msg.position = {left_position, right_position};
-    joint_states_msg.velocity = {left_velocity, right_velocity};
-    joint_states_pub->publish(joint_states_msg);
+    joint_states_msg.position = {left_position, right_position}; // in radians
+    joint_states_msg.velocity = {left_velocity, right_velocity}; // in rad/s
+    joint_states_pub->publish(joint_states_msg); 
   }
 };
 

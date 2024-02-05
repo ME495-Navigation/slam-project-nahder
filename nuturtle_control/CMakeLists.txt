@@ -14,28 +14,29 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nuturtlebot_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
 
 add_executable(turtle_control src/turtle_control.cpp)
+add_executable(odometry src/odometry.cpp)
 
-ament_target_dependencies(
-  turtle_control
-  rclcpp 
-  std_msgs 
-  geometry_msgs 
-  sensor_msgs
-  nuturtlebot_msgs
-  turtlelib
-)
+ament_target_dependencies(turtle_control rclcpp  std_msgs geometry_msgs sensor_msgs nuturtlebot_msgs turtlelib)
+
+ament_target_dependencies(odometry rclcpp geometry_msgs sensor_msgs nav_msgs tf2_ros tf2)
+
+target_link_libraries(turtle_control turtlelib::turtlelib)
+
+target_link_libraries(odometry turtlelib::turtlelib)
 
 target_include_directories(turtle_control PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(turtle_control PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-install(TARGETS turtle_control
+install(TARGETS turtle_control odometry
   DESTINATION lib/${PROJECT_NAME})
 
-target_link_libraries(turtle_control turtlelib::turtlelib)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

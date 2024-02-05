@@ -40,7 +40,7 @@
 - [x] D.3 (Documentation) 
 
 #### Task E (Robot control) 
-- [ ] E.1 (Turtle interface) 
+- [x] E.1 (Turtle interface) 
 - [ ] E.2 (Odometry node) 
 - [ ] E.3 (Circle) 
 - [ ] E.4 (ROS API Testing) 

@@ -36,14 +36,10 @@ namespace turtlelib
         /// @param new_wheel_config
         void forwardKinematics(const wheelVel new_wheel_config);
 
-        // ik: compute the wheel velocities required to achieve a desired twist
-
         /// @brief inverse kinematics. compute the wheel velocities required to achieve a desired twist
         /// @param twist
         /// @return wheelVel object with left and right wheel velocities
         wheelVel inverseKinematics(const Twist2D twist) const;
-
-        // convert wheel velocities to actual body twis
 
         /// @brief convert wheel velocities to actual body twist
         /// @param u
@@ -54,13 +50,10 @@ namespace turtlelib
         /// @return robotConfig object of {x,y,theta}
         robotConfig get_config() const { return cur_config; }
 
-        
-
     private:
         robotConfig cur_config;
         wheelVel cur_wheel_vel;
 
-        // defaults for turtlebot3 burger
         double wheel_radius;
         double track_width;
     };
