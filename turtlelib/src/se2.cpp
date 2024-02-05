@@ -15,7 +15,7 @@ namespace turtlelib
     // read input stream into twist object
     std::istream &operator>>(std::istream &is, Twist2D &tw)
     {
-        char c;
+        char c; // uninitialized, does not eat closing ']'
         is >> c; 
         if (c == '[')
         { 
@@ -60,11 +60,11 @@ namespace turtlelib
     // this function lets us pass in a point to a Transform2D object and get the transformed point back
     Point2D Transform2D::operator()(Point2D p) const
     {
-
+        // const auto
         double x_new{p.x * cos(theta) - p.y * sin(theta) + vec.x};
         double y_new{p.x * sin(theta) + p.y * cos(theta) + vec.y};
 
-        return Point2D{x_new, y_new};
+        return Point2D{x_new, y_new}; // no need for Point2D (or even x_new, y_new)
     }
 
     // vectors are invariant under translation
@@ -80,11 +80,11 @@ namespace turtlelib
     // Transform the frame of a twist object using the 2D adjoint
     Twist2D Transform2D::operator()(Twist2D v) const
     {
-
+        // const auto
         double xdot_new{vec.y * v.omega + cos(theta) * v.x - sin(theta) * v.y};
         double ydot_new{-vec.x * v.omega + sin(theta) * v.x + cos(theta) * v.y};
 
-        return Twist2D{v.omega, xdot_new, ydot_new};
+        return Twist2D{v.omega, xdot_new, ydot_new}; // twist2d unneeded
     }
 
     // invert the transformation object and return it
@@ -110,7 +110,7 @@ namespace turtlelib
     std::istream &operator>>(std::istream &is, Transform2D &tf)
     {
         Vector2D v;
-        double theta;
+        double theta; // uninitialized variable, very scary!
 
         char firstChar = is.peek();
         if (firstChar == 'd')

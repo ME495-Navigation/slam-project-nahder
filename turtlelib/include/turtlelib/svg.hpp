@@ -68,10 +68,14 @@ namespace turtlelib
     
         std::string svgContent; 
 
-        float vb_min_x{0.0}, vb_min_y{0.0}, vb_width{816.0}, vb_height{1056.0}; 
+        float vb_min_x{0.0}, vb_min_y{0.0}, vb_width{816.0}, vb_height{1056.0}; // probably could be doubles
 
+        /// could use a comment.
+        // Should not be "const".
+        // Making const member variables disables default copy construction/assignment operators, but
+        // usually those are useful and good and make the class more useful
         const Transform2D tf_svg_to_world {
-            Vector2D{vb_width / 2, vb_height / 2}, 0.0
+            Vector2D{vb_width / 2, vb_height / 2}, 0.0 // /2.0 rather than /2
         };
     };
 }

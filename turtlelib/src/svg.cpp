@@ -10,6 +10,7 @@ namespace turtlelib
 {
     SVG::SVG()
     {
+        // why use a string stream here? The string can be initialized directly in the initializer list...
         std::ostringstream svgHeader;
         svgHeader << "<svg width=\"8.500000in\" height=\"11.000000in\" viewBox=\"0 0 816.000000 1056.000000\" xmlns=\"http://www.w3.org/2000/svg\">\n";
         svgHeader << "<defs>\n";

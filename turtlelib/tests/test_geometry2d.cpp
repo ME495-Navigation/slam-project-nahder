@@ -13,7 +13,7 @@ namespace turtlelib {
     }
 
     TEST_CASE("Normalize angle for PI", "[normalize]") {
-        double normalized_angle = normalize_angle(PI);
+        double normalized_angle = normalize_angle(PI); // auto
         REQUIRE_THAT(normalized_angle, Catch::Matchers::WithinRel(PI)); // Changed to expect PI
         REQUIRE(is_within_range(normalized_angle));
     }

@@ -135,7 +135,7 @@ private:
     std::shared_ptr<nusim::srv::Teleport::Response> response)
   {
     RCLCPP_INFO_STREAM(
-      this->get_logger(),
+        this->get_logger(), // no need for this->
       "teleporting to " << request->x << ", " << request->y << ", " << request->theta);
 
     cur_x = request->x, cur_y = request->y, cur_theta = request->theta;
@@ -146,8 +146,8 @@ private:
   {
     visualization_msgs::msg::MarkerArray walls;
 
-    auto wall_height{0.25};
-    auto wall_thickness{0.15};
+    auto wall_height{0.25}; // const
+    auto wall_thickness{0.15}; // const
 
     // lambda function, has read/write access to all variables in scope by reference [&]
     auto create_wall = [&](int id, double scale_x, double scale_y,
@@ -191,13 +191,13 @@ private:
     return walls;
   }
 
-  visualization_msgs::msg::MarkerArray create_obstacles(
+    visualization_msgs::msg::MarkerArray create_obstacles( // why are the vectors passed by value here and not ref to const?
     std::vector<double> x, std::vector<double> y, double r)
   {
 
     if (x.size() != y.size()) {
       RCLCPP_ERROR_STREAM(
-        this->get_logger(),
+          this->get_logger(), // no need for this->
         "number of x and y coordinates must be the same");
 
       throw std::runtime_error("obstacle list size mismatch, exiting");
@@ -227,8 +227,8 @@ private:
         return obstacle;
       };
 
-    for (uint64_t i = 0; i < x.size(); i++) {
-      obstacles.markers.push_back(create_obstacle(i, r, r, x[i], y[i]));
+    for (uint64_t i = 0; i < x.size(); i++) { // should be size_t
+        obstacles.markers.push_back(create_obstacle(i, r, r, x[i], y[i])); // .at()
     }
 
     return obstacles;
