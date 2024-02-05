@@ -1,7 +1,6 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
 #include "turtlelib/diff_drive.hpp"
-
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
@@ -79,6 +78,7 @@ private:
     {
         // joint state msg has the position and velocity for each wheel
         turtlelib::wheelVel new_wheel_config{
+            //TODO: make sure these indices are not flipped
             js_msg.position[0] - prev_js_msg.position[0], // in radians
             js_msg.position[1] - prev_js_msg.position[1]};
 
