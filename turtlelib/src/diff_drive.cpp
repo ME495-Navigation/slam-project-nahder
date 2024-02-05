@@ -28,9 +28,10 @@ namespace turtlelib
         Transform2D T_w_bp = T_wb * T_b_bp;
 
         // update the robot configuration
-        cur_config.x = T_w_bp.translation().x;
-        cur_config.y = T_w_bp.translation().y;
-        cur_config.theta = normalize_angle(T_w_bp.rotation());
+        set_config({T_w_bp.translation().x, T_w_bp.translation().y, normalize_angle(T_w_bp.rotation())});
+        // cur_config.x = T_w_bp.translation().x;
+        // cur_config.y = T_w_bp.translation().y;
+        // cur_config.theta = normalize_angle(T_w_bp.rotation());
     }
 
     Twist2D DiffDrive::computeBodyTwist(const wheelVel u) const

@@ -50,6 +50,11 @@ namespace turtlelib
         /// @return robotConfig object of {x,y,theta}
         robotConfig get_config() const { return cur_config; }
 
+
+        /// @brief setter for robot configuration
+        /// @param config
+        void set_config(robotConfig config) { cur_config = config; }
+
     private:
         robotConfig cur_config;
         wheelVel cur_wheel_vel;

@@ -7,7 +7,6 @@
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
-
 #include "nuturtle_control/srv/initial_pose.hpp"
 
 using namespace std::chrono_literals;
@@ -41,7 +40,11 @@ public:
         joint_state_sub = create_subscription<sensor_msgs::msg::JointState>(
             "/joint_states", 10, std::bind(&Odometry::joint_state_callback, this, std::placeholders::_1));
 
-        tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this); 
+        tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
+        initial_pose_srv = create_service<nuturtle_control::srv::InitialPose>(
+            "/initial_pose", std::bind(&Odometry::initial_pose_callback,
+                                       this, std::placeholders::_1, std::placeholders::_2));
 
         prev_js_msg.position = {0.0, 0.0};
     }
@@ -49,9 +52,10 @@ public:
 private:
     std::string body_id, wheel_left, wheel_right, odom_id;
     double wheel_radius, track_width;
-    
+
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub;
+    rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
     turtlelib::DiffDrive turtleBot;
@@ -68,9 +72,9 @@ private:
         }
     }
 
-    //turtle_control node converts encoder ticks to radians and publishes joint state messages {left_wheel_joint, right_wheel_joint}
-    // every time a joint state message is received, update internal odometry state and publish odometry message
-    // odometry: relative position and orientation of the robot from where it started
+    // turtle_control node converts encoder ticks to radians and publishes joint state messages {left_wheel_joint, right_wheel_joint}
+    //  every time a joint state message is received, update internal odometry state and publish odometry message
+    //  odometry: relative position and orientation of the robot from where it started
     void joint_state_callback(const sensor_msgs::msg::JointState &js_msg)
     {
         // joint state msg has the position and velocity for each wheel
@@ -97,6 +101,7 @@ private:
         odom_msg.twist.twist.linear.x = body_twist.x;
         odom_msg.twist.twist.linear.y = body_twist.y;
         odom_msg.twist.twist.angular.z = body_twist.omega;
+
         tf2::Quaternion q;
         q.setRPY(0, 0, config.theta);
         odom_msg.pose.pose.orientation.x = q.x();
@@ -120,6 +125,22 @@ private:
         tf_broadcaster->sendTransform(odom_tf);
 
         prev_js_msg = js_msg;
+    }
+
+    // service to set the initial pose of the robot. odometry should be updated to reflect the new pose
+    void initial_pose_callback(const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
+                               std::shared_ptr<nuturtle_control::srv::InitialPose::Response> response)
+    {
+        turtlelib::robotConfig config{request->x, request->y, request->theta};
+        turtleBot.set_config(config);
+         //TODO: maybe wasn't the best idea to add a setter. 
+        //can instead use the assignment operator, 
+        //but need to add a constructor which takes in a configuration instead of just wheel radius and track width
+        //currently, the constructor initializes the configuration to 0,0,0 through the robotConfig struct defaults
+
+        RCLCPP_INFO_STREAM(this->get_logger(), "Setting initial pose to x: " << request->x << " y: " 
+                            << request->y << " theta: " << request->theta);
+        response->success = true;
     }
 };
 
