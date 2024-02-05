@@ -7,6 +7,9 @@
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
+
+#include "nuturtle_control/srv/initial_pose.hpp"
+
 using namespace std::chrono_literals;
 
 class Odometry : public rclcpp::Node
