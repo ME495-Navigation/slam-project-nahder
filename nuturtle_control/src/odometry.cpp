@@ -111,18 +111,18 @@ private:
         odom_pub->publish(odom_msg);
 
         // publish the new robot configuration as a transform
-        geometry_msgs::msg::TransformStamped odom_tf;
-        odom_tf.header.stamp = js_msg.header.stamp;
-        odom_tf.header.frame_id = odom_id;
-        odom_tf.child_frame_id = body_id;
-        odom_tf.transform.translation.x = config.x;
-        odom_tf.transform.translation.y = config.y;
-        odom_tf.transform.translation.z = 0.0;
-        odom_tf.transform.rotation.x = q.x();
-        odom_tf.transform.rotation.y = q.y();
-        odom_tf.transform.rotation.z = q.z();
-        odom_tf.transform.rotation.w = q.w();
-        tf_broadcaster->sendTransform(odom_tf);
+        geometry_msgs::msg::TransformStamped odom_xform;
+        odom_xform.header.stamp = js_msg.header.stamp;
+        odom_xform.header.frame_id = odom_id;
+        odom_xform.child_frame_id = body_id;
+        odom_xform.transform.translation.x = config.x;
+        odom_xform.transform.translation.y = config.y;
+        odom_xform.transform.translation.z = 0.0;
+        odom_xform.transform.rotation.x = q.x();
+        odom_xform.transform.rotation.y = q.y();
+        odom_xform.transform.rotation.z = q.z();
+        odom_xform.transform.rotation.w = q.w();
+        tf_broadcaster->sendTransform(odom_xform);
 
         prev_js_msg = js_msg;
     }
