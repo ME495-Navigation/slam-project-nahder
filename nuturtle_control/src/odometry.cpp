@@ -77,13 +77,13 @@ private:
     void joint_state_callback(const sensor_msgs::msg::JointState &js_msg)
     {
         // joint state msg has the position and velocity for each wheel
+        // take the joint state msg, turn it into a wheelVel object, and pass it to forwardKinematics
         turtlelib::wheelVel new_wheel_config{
             //TODO: make sure these indices are not flipped
             js_msg.position[0] - prev_js_msg.position[0], // in radians
             js_msg.position[1] - prev_js_msg.position[1]};
 
         // use forward kinematics to update robot configuration given the new wheel configuration
-        // take the joint state msg, turn it into a wheelVel object, and pass it to forwardKinematics
         turtleBot.forwardKinematics(new_wheel_config);
         turtlelib::robotConfig config = turtleBot.get_config();
         turtlelib::Twist2D body_twist = turtleBot.computeBodyTwist(new_wheel_config);
