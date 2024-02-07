@@ -72,6 +72,7 @@ target_link_libraries(circle "${cpp_typesupport_target}")
 install(DIRECTORY
   srv
   launch
+  config
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -20,7 +20,6 @@ public:
     declare_parameter("motor_cmd_per_rad_sec", 0.0);
     declare_parameter("encoder_ticks_per_rad", 0.0);
     declare_parameter("collision_radius", 0.0);
-    check_params();
 
     wheel_radius = get_parameter("wheel_radius").as_double();
     track_width = get_parameter("track_width").as_double();
@@ -28,6 +27,8 @@ public:
     motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
     collision_radius = get_parameter("collision_radius").as_double();
+
+    check_params();
 
     turtleBot = turtlelib::DiffDrive(wheel_radius, track_width);
 
@@ -62,7 +63,7 @@ private:
         motor_cmd_per_rad_sec == 0.0 || encoder_ticks_per_rad == 0.0 || collision_radius == 0.0)
     {
       RCLCPP_ERROR_STREAM(this->get_logger(), "Missing turtle_control parameter(s). Exiting...");
-      rclcpp::shutdown();
+      throw std::runtime_error("Missing odometry parameter(s). Exiting...");
     }
   }
 
@@ -95,6 +96,9 @@ private:
   /// @param sensor_data
   void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData &msg)
   {
+
+    RCLCPP_ERROR_STREAM(this->get_logger(), "TRYING TO CRASH HERE");
+    throw std::runtime_error("RECEIVED SENSOR DATA. CRASHING IN SENSOR DATA CALLBACK");
     auto current_time = msg.stamp.sec + msg.stamp.nanosec * 1e-9;
     double left_position = static_cast<double>(msg.left_encoder) / encoder_ticks_per_rad;
     double right_position = static_cast<double>(msg.right_encoder) / encoder_ticks_per_rad;

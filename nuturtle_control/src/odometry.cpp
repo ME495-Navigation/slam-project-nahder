@@ -17,17 +17,20 @@ public:
     Odometry() : Node("odometry")
     {
         declare_parameter("body_id", "");     // base_footprint
+        declare_parameter("odom_id", "odom"); // odom
+
         declare_parameter("wheel_left", "");  // wheel_left_joint
         declare_parameter("wheel_right", ""); // wheel_right_joint
-        declare_parameter("odom_id", "odom"); // odom
 
         declare_parameter("wheel_radius", 0.0);
         declare_parameter("track_width", 0.0);
 
         body_id = get_parameter("body_id").as_string();
+        odom_id = get_parameter("odom_id").as_string();
+
+
         wheel_left = get_parameter("wheel_left").as_string();
         wheel_right = get_parameter("wheel_right").as_string();
-        odom_id = get_parameter("odom_id").as_string();
 
         wheel_radius = get_parameter("wheel_radius").as_double();
         track_width = get_parameter("track_width").as_double();
@@ -67,7 +70,7 @@ private:
             wheel_radius == 0.0 || track_width == 0.0)
         {
             RCLCPP_ERROR_STREAM(this->get_logger(), "Missing odometry parameter(s). Exiting...");
-            rclcpp::shutdown();
+            throw std::runtime_error("Missing odometry parameter(s). Exiting...");
         }
     }
 
@@ -76,6 +79,10 @@ private:
     //  odometry: relative position and orientation of the robot from where it started
     void joint_state_callback(const sensor_msgs::msg::JointState &js_msg)
     {
+        //if we enter here, throw an error 
+        RCLCPP_ERROR_STREAM(this->get_logger(), "TRYING TO CRASH HERE");
+        throw std::runtime_error("RECEIVED JOINT STATES. CRASHING...");
+
         // joint state msg has the position and velocity for each wheel
         // take the joint state msg, turn it into a wheelVel object, and pass it to forwardKinematics
         turtlelib::wheelVel new_wheel_config{
@@ -110,11 +117,14 @@ private:
         odom_msg.pose.pose.orientation.w = q.w();
         odom_pub->publish(odom_msg);
 
+        //log the transform being sent
+        RCLCPP_INFO_STREAM(this->get_logger(), "Publishing transform from " << odom_msg.header.frame_id << " to " << odom_msg.child_frame_id);
+
         // publish the new robot configuration as a transform
         geometry_msgs::msg::TransformStamped odom_xform;
         odom_xform.header.stamp = js_msg.header.stamp;
-        odom_xform.header.frame_id = odom_id;
-        odom_xform.child_frame_id = body_id;
+        odom_xform.header.frame_id = "odom";
+        odom_xform.child_frame_id = "blue/base_footprint";
         odom_xform.transform.translation.x = config.x;
         odom_xform.transform.translation.y = config.y;
         odom_xform.transform.translation.z = 0.0;
