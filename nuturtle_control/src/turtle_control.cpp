@@ -117,9 +117,10 @@ private:
     prev_sensor_time = current_time;
 
     sensor_msgs::msg::JointState joint_states_msg;
-    joint_states_msg.header.stamp = msg.stamp;
+    joint_states_msg.header.stamp = get_clock()->now();
     joint_states_msg.name = {"wheel_left_joint", "wheel_right_joint"};
     joint_states_msg.position = {left_position, right_position}; // in radians
+
     joint_states_msg.velocity = {left_velocity, right_velocity}; // in rad/s
     joint_states_pub->publish(joint_states_msg); 
   }

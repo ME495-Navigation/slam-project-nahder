@@ -28,7 +28,6 @@ public:
         body_id = get_parameter("body_id").as_string();
         odom_id = get_parameter("odom_id").as_string();
 
-
         wheel_left = get_parameter("wheel_left").as_string();
         wheel_right = get_parameter("wheel_right").as_string();
 
@@ -58,6 +57,7 @@ private:
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub;
     rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv;
+    rclcpp::TimerBase::SharedPtr timer;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
     turtlelib::DiffDrive turtleBot;
@@ -83,19 +83,18 @@ private:
         // take the joint state msg, turn it into a wheelVel object, and pass it to forwardKinematics
         turtlelib::wheelVel new_wheel_config{
             //TODO: make sure these indices are not flipped
-            js_msg.position[0] - prev_js_msg.position[0], // in radians
-            js_msg.position[1] - prev_js_msg.position[1]};
+            js_msg.position.at(1) - prev_js_msg.position.at(1), // in radians
+            js_msg.position.at(0) - prev_js_msg.position.at(0)};
 
         // use forward kinematics to update robot configuration given the new wheel configuration
         turtleBot.forwardKinematics(new_wheel_config);
-        turtlelib::robotConfig config = turtleBot.get_config();
-        turtlelib::Twist2D body_twist = turtleBot.computeBodyTwist(new_wheel_config);
+        auto config = turtleBot.get_config();
+        auto body_twist = turtleBot.computeBodyTwist(new_wheel_config);
 
         // publish the new robot configuration as an odometry message
         nav_msgs::msg::Odometry odom_msg;
-
         // format an odometry message with the new robot configuration and publish it
-        odom_msg.header.stamp = js_msg.header.stamp;
+        odom_msg.header.stamp = get_clock()->now();
         odom_msg.header.frame_id = odom_id;
         odom_msg.child_frame_id = body_id;
         odom_msg.pose.pose.position.x = config.x;
@@ -113,12 +112,9 @@ private:
         odom_msg.pose.pose.orientation.w = q.w();
         odom_pub->publish(odom_msg);
 
-        //log the transform being sent
-        RCLCPP_INFO_STREAM(this->get_logger(), "Publishing transform from " << odom_msg.header.frame_id << " to " << odom_msg.child_frame_id);
-
         // publish the new robot configuration as a transform
         geometry_msgs::msg::TransformStamped odom_xform;
-        odom_xform.header.stamp = js_msg.header.stamp;
+        odom_xform.header.stamp = get_clock()->now();
         odom_xform.header.frame_id = "odom";
         odom_xform.child_frame_id = "blue/base_footprint";
         odom_xform.transform.translation.x = config.x;
@@ -129,7 +125,6 @@ private:
         odom_xform.transform.rotation.z = q.z();
         odom_xform.transform.rotation.w = q.w();
         tf_broadcaster->sendTransform(odom_xform);
-
         prev_js_msg = js_msg;
     }
 
@@ -139,13 +134,13 @@ private:
     {
         turtlelib::robotConfig config{request->x, request->y, request->theta};
         turtleBot.set_config(config);
-         //TODO: maybe wasn't the best idea to add a setter. 
-        //can instead use the assignment operator, 
-        //but need to add a constructor which takes in a configuration instead of just wheel radius and track width
-        //currently, the constructor initializes the configuration to 0,0,0 through the robotConfig struct defaults
+        // TODO: maybe wasn't the best idea to add a setter.
+        // can instead use the assignment operator,
+        // but need to add a constructor which takes in a configuration instead of just wheel radius and track width
+        // currently, the constructor initializes the configuration to 0,0,0 through the robotConfig struct defaults
 
-        RCLCPP_INFO_STREAM(this->get_logger(), "Setting initial pose to x: " << request->x << " y: " 
-                            << request->y << " theta: " << request->theta);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Setting initial pose to x: " << request->x << " y: "
+                                                                             << request->y << " theta: " << request->theta);
         response->success = true;
     }
 };

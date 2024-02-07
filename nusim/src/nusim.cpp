@@ -48,7 +48,7 @@ public:
         rclcpp::QoS(1).transient_local());
 
     red_wheel_cmd_sub = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
-        "red/wheel_cmd", 10, std::bind(&NUSim::red_wheel_cmd_callback, this, std::placeholders::_1));
+        "red/wheel_cmd", 10, std::bind(&NUSim::wheel_cmd_cb, this, std::placeholders::_1));
 
     sensor_data_pub = create_publisher<nuturtlebot_msgs::msg::SensorData>(
         "red/sensor_data", 10);
@@ -66,6 +66,7 @@ public:
     declare_parameter("obstacles.r", 0.5);
 
     rate = get_parameter("rate").as_double();
+
     x0 = get_parameter("x0").as_double();
     y0 = get_parameter("y0").as_double();
     theta0 = get_parameter("theta0").as_double();
@@ -77,7 +78,7 @@ public:
     motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
 
-    cur_x = x0, cur_y = y0, cur_theta = theta0;
+    red_x = x0, red_y = y0, red_theta = theta0;
 
     timer = create_wall_timer(1s / rate, std::bind(&NUSim::timer_callback, this));
 
@@ -86,6 +87,9 @@ public:
 
     auto obstacles_msg{create_obstacles(obstacles_x, obstacles_y, obstacle_r)};
     obstacles_pub->publish(obstacles_msg);
+
+    dt = 1.0 / rate;
+
   }
 
 private:
@@ -98,13 +102,18 @@ private:
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr red_wheel_cmd_sub;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_pub;
   turtlelib::DiffDrive red_diff_drive;
+  nuturtlebot_msgs::msg::SensorData sensor_data;
+
+  double left_encoder_pos{0.0}, right_encoder_pos{0.0};
+  double new_left_rads{0.0}, new_right_rads{0.0};
+  turtlelib::wheelVel wheel_config{0.0, 0.0};
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
   geometry_msgs::msg::TransformStamped xform_stamped;
   tf2::Quaternion q;
 
-  double x0, y0, theta0, cur_x, cur_y, cur_theta, arena_x_length,
-      arena_y_length, obstacle_r, rate, motor_cmd_per_rad_sec, left_wheel_vel, right_wheel_vel, encoder_ticks_per_rad;
+  double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length,
+      arena_y_length, obstacle_r, rate, motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt;
 
   turtlelib::wheelVel red_wheel_vel{0.0, 0.0};
 
@@ -117,40 +126,38 @@ private:
     std_msgs::msg::UInt64 msg;
     timestep++;
     msg.data = timestep;
-    update_robot_config();
     timestep_pub->publish(msg);
+    publish_encoders();
+    update_robot_pose();
     update_xform();
   }
 
-  void update_robot_config()
+  //STORE WHEEL COMMANDS IN RAD/SEC (converted from MCU)
+  void wheel_cmd_cb(const nuturtlebot_msgs::msg::WheelCommands &wheel_cmd_msg)
   {
-    // the current wheel velocities in rad/sec are stored in red_wheel_vel and updated in the red_wheel_cmd_callback
-    const auto dt = 1.0 / rate;
-    auto red_left_vel = red_wheel_vel.right_wheel_vel * dt;
-    auto red_right_vel = red_wheel_vel.left_wheel_vel * dt;
-
-    turtlelib::wheelVel new_red_pos{red_left_vel, red_right_vel};
-
-    red_diff_drive.forwardKinematics(new_red_pos);
-    auto red_config = red_diff_drive.get_config();
-    cur_x = red_config.x; //robot's x position
-    cur_y = red_config.y; //robot's y position
-    cur_theta = red_config.theta; //robot's heading 
+    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec; // UNITS: radians/sec
+    red_wheel_vel.right_wheel_vel = wheel_cmd_msg.right_velocity * motor_cmd_per_rad_sec;
   }
 
-  void red_wheel_cmd_callback(const nuturtlebot_msgs::msg::WheelCommands &wheel_cmd_msg)
+  //PUBLISH CURRENT WHEEL ENCODER POSITIONS IN TICKS 
+  //MOVE THE ROBOT ACCORDINGLY
+  void publish_encoders()
   {
-    // reads in motor command units and converts to rad/sec
-    red_wheel_vel.left_wheel_vel = static_cast<double>(wheel_cmd_msg.left_velocity) * motor_cmd_per_rad_sec;
-    red_wheel_vel.right_wheel_vel = static_cast<double>(wheel_cmd_msg.right_velocity) * motor_cmd_per_rad_sec;
+    new_left_rads = red_wheel_vel.left_wheel_vel * (dt);   // WHEEL POS UNITS: RADIANS
+    new_right_rads = red_wheel_vel.right_wheel_vel * (dt); // WHEEL POS UNITS: RADIANS
+    left_encoder_pos += new_left_rads * encoder_ticks_per_rad;   // UNITS: TICKS
+    right_encoder_pos += new_right_rads * encoder_ticks_per_rad; // UNITS: TICKS
+    sensor_data.left_encoder = left_encoder_pos;
+    sensor_data.right_encoder = right_encoder_pos;
+    sensor_data_pub->publish(sensor_data); // PUBLISH CURRENT WHEEL ENCODER POSITIONS IN TICKS
+  }
 
-    nuturtlebot_msgs::msg::SensorData sensor_data;
-    sensor_data.stamp = get_clock()->now();
-    sensor_data.right_encoder = red_wheel_vel.right_wheel_vel * encoder_ticks_per_rad;
-    sensor_data.left_encoder = red_wheel_vel.left_wheel_vel * encoder_ticks_per_rad;
-    sensor_data_pub->publish(sensor_data);
-    //log
-    RCLCPP_INFO_STREAM(this->get_logger(), "sensor data: " << sensor_data.left_encoder << " " << sensor_data.right_encoder);
+  void update_robot_pose() {
+    wheel_config = turtlelib::wheelVel{new_right_rads, new_left_rads}; // UPDATE ROBOT POSE GIVEN WHEEL CONFIGURATION
+    red_diff_drive.forwardKinematics(wheel_config);
+    red_x = red_diff_drive.get_config().x;
+    red_y = red_diff_drive.get_config().y;
+    red_theta = red_diff_drive.get_config().theta;
   }
 
   void update_xform()
@@ -158,10 +165,10 @@ private:
     xform_stamped.header.stamp = this->get_clock()->now();
     xform_stamped.header.frame_id = "nusim/world";
     xform_stamped.child_frame_id = "red/base_footprint";
-    xform_stamped.transform.translation.x = cur_x;
-    xform_stamped.transform.translation.y = cur_y;
+    xform_stamped.transform.translation.x = red_x;
+    xform_stamped.transform.translation.y = red_y;
     xform_stamped.transform.translation.z = 0.0;
-    q.setRPY(0, 0, cur_theta);
+    q.setRPY(0, 0, red_theta);
     xform_stamped.transform.rotation.x = q.x();
     xform_stamped.transform.rotation.y = q.y();
     xform_stamped.transform.rotation.z = q.z();
@@ -169,17 +176,17 @@ private:
     tf_broadcaster->sendTransform(xform_stamped);
   }
 
-  void reset_callback(
+  void reset_callback( // TODO: NOT USING CUR_X ANYMORE, FIX
       const std::shared_ptr<std_srvs::srv::Trigger::Request>,
       std::shared_ptr<std_srvs::srv::Trigger::Response> response)
   {
     RCLCPP_INFO_STREAM(this->get_logger(), "resetting timestep and pose");
 
-    cur_x = x0, cur_y = y0, cur_theta = theta0, timestep = 0;
+    red_x = x0, red_y = y0, red_theta = theta0, timestep = 0;
     response->success = true;
   }
 
-  void teleport_callback(
+  void teleport_callback( // TODO: NOT USING CUR_X ANYMORE, FIX
       const std::shared_ptr<nusim::srv::Teleport::Request> request,
       std::shared_ptr<nusim::srv::Teleport::Response> response)
   {
@@ -187,7 +194,7 @@ private:
         this->get_logger(),
         "teleporting to " << request->x << ", " << request->y << ", " << request->theta);
 
-    cur_x = request->x, cur_y = request->y, cur_theta = request->theta;
+    red_x = request->x, red_y = request->y, red_theta = request->theta;
     response->success = true;
   }
 

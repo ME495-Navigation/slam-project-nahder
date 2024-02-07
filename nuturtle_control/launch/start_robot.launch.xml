@@ -20,7 +20,6 @@
   <group if="$(eval '\'$(var cmd_src)\' == \'circle\'')">
       <node pkg="nuturtle_control" exec="circle" name="circle">
           <param from= "$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-          <remap from="/joint_states" to="blue/joint_states"/>
           <param name="body_id" value= '$(var body_id)'/>
           <param name="odom_id" value= '$(var odom_id)'/>
           <param name="wheel_left" value= '$(var wheel_left)'/>
@@ -29,8 +28,9 @@
   </group>
 
   <!-- teleop command node-->
+  <!-- TODO: CITE https://robotics.stackexchange.com/questions/93858/is-teleop-twist-keyboard-launchable-in-ros2 -->
   <group if="$(eval '\'$(var cmd_src)\' == \'teleop\'')">
-      <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop_twist_keyboard" output="screen" launch-prefix="xterm -e"/>
+        <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" output="screen" launch-prefix="xterm -e" />
   </group>
 
 
