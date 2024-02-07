@@ -96,9 +96,6 @@ private:
   /// @param sensor_data
   void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData &msg)
   {
-
-    RCLCPP_ERROR_STREAM(this->get_logger(), "TRYING TO CRASH HERE");
-    throw std::runtime_error("RECEIVED SENSOR DATA. CRASHING IN SENSOR DATA CALLBACK");
     auto current_time = msg.stamp.sec + msg.stamp.nanosec * 1e-9;
     double left_position = static_cast<double>(msg.left_encoder) / encoder_ticks_per_rad;
     double right_position = static_cast<double>(msg.right_encoder) / encoder_ticks_per_rad;

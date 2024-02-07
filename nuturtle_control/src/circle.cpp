@@ -60,6 +60,7 @@ private:
     {
         body_twist.linear.x *= -1;
         body_twist.angular.z *= -1;
+        body_twist.linear.y = 0;
 
         RCLCPP_INFO(get_logger(), "Received request to reverse direction");
     }
@@ -69,6 +70,7 @@ private:
     {
         RCLCPP_INFO(get_logger(), "Received request to stop");
         body_twist.linear.x = 0;
+        body_twist.linear.y = 0;
         body_twist.angular.z = 0;
         stopped = true;
         cmd_pub->publish(body_twist); // publish a single cmd_vel command of zero when stopped

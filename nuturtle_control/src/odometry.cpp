@@ -79,10 +79,6 @@ private:
     //  odometry: relative position and orientation of the robot from where it started
     void joint_state_callback(const sensor_msgs::msg::JointState &js_msg)
     {
-        //if we enter here, throw an error 
-        RCLCPP_ERROR_STREAM(this->get_logger(), "TRYING TO CRASH HERE");
-        throw std::runtime_error("RECEIVED JOINT STATES. CRASHING...");
-
         // joint state msg has the position and velocity for each wheel
         // take the joint state msg, turn it into a wheelVel object, and pass it to forwardKinematics
         turtlelib::wheelVel new_wheel_config{
