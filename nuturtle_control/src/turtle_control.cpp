@@ -12,7 +12,8 @@ using namespace std::chrono_literals;
 class TurtleControl : public rclcpp::Node
 {
 public:
-  TurtleControl() : Node("turtle_control")
+  TurtleControl()
+  : Node("turtle_control")
   {
     declare_parameter("wheel_radius", 0.0);
     declare_parameter("track_width", 0.0);
@@ -33,10 +34,12 @@ public:
     turtleBot = turtlelib::DiffDrive(wheel_radius, track_width);
 
     cmd_vel_sub = create_subscription<geometry_msgs::msg::Twist>(
-        "cmd_vel", 10, std::bind(&TurtleControl::cmd_vel_callback, this, std::placeholders::_1));
+      "cmd_vel", 10, std::bind(&TurtleControl::cmd_vel_callback, this, std::placeholders::_1));
 
     sensor_data_sub = create_subscription<nuturtlebot_msgs::msg::SensorData>(
-        "sensor_data", 10, std::bind(&TurtleControl::sensor_data_callback, this, std::placeholders::_1));
+      "sensor_data", 10, std::bind(
+        &TurtleControl::sensor_data_callback, this,
+        std::placeholders::_1));
 
     wheel_cmd_pub = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("/wheel_cmd", 10);
 
@@ -45,7 +48,7 @@ public:
 
 private:
   double wheel_radius, track_width, motor_cmd_max, motor_cmd_per_rad_sec,
-      encoder_ticks_per_rad, collision_radius;
+    encoder_ticks_per_rad, collision_radius;
 
   double prev_sensor_time{-1.0};
   double left_prev{0.0}, right_prev{0.0};
@@ -60,7 +63,7 @@ private:
   void check_params()
   {
     if (wheel_radius == 0.0 || track_width == 0.0 || motor_cmd_max == 0.0 ||
-        motor_cmd_per_rad_sec == 0.0 || encoder_ticks_per_rad == 0.0 || collision_radius == 0.0)
+      motor_cmd_per_rad_sec == 0.0 || encoder_ticks_per_rad == 0.0 || collision_radius == 0.0)
     {
       RCLCPP_ERROR_STREAM(this->get_logger(), "Missing turtle_control parameter(s). Exiting...");
       throw std::runtime_error("Missing odometry parameter(s). Exiting...");
@@ -69,7 +72,7 @@ private:
 
   /// @brief takes in a body twist and publishes wheel vel commands to /wheel_cmd
   /// @param geometry_msg type twist
-  void cmd_vel_callback(const geometry_msgs::msg::Twist &twist)
+  void cmd_vel_callback(const geometry_msgs::msg::Twist & twist)
   {
     // convert geometry msg twist to Twist2D twist
     turtlelib::Twist2D tw{twist.angular.z, twist.linear.x, twist.linear.y};
@@ -94,7 +97,7 @@ private:
 
   /// @brief takes in wheel encoder readings and publishes joint states to /joint_states
   /// @param sensor_data
-  void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData &msg)
+  void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg)
   {
     auto current_time = msg.stamp.sec + msg.stamp.nanosec * 1e-9;
     double left_position = static_cast<double>(msg.left_encoder) / encoder_ticks_per_rad;
@@ -104,8 +107,7 @@ private:
     double right_velocity{0.0};
 
     // check if not the first message
-    if (prev_sensor_time > 0.0)
-    {
+    if (prev_sensor_time > 0.0) {
       elapsed_time = current_time - prev_sensor_time;
       left_velocity = (left_position - left_prev) / elapsed_time;
       right_velocity = (right_position - right_prev) / elapsed_time;
@@ -122,11 +124,11 @@ private:
     joint_states_msg.position = {left_position, right_position}; // in radians
 
     joint_states_msg.velocity = {left_velocity, right_velocity}; // in rad/s
-    joint_states_pub->publish(joint_states_msg); 
+    joint_states_pub->publish(joint_states_msg);
   }
 };
 
-int main(int argc, char *argv[])
+int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<TurtleControl>());
