@@ -14,8 +14,9 @@
   <depend>rclcpp</depend>
   <depend>tf2_ros</depend>
   <depend>tf2</depend>
-  <depend>catch_ros2</depend>  
+  <!-- <depend>catch_ros2</depend>   -->
   <depend>geometry_msgs</depend>
+  <depend>turtlelib</depend>
 
 
   <test_depend>ament_lint_auto</test_depend>

@@ -143,8 +143,8 @@ private:
   //MOVE THE ROBOT ACCORDINGLY
   void publish_encoders()
   {
-    new_left_rads = red_wheel_vel.left_wheel_vel * (dt);   // WHEEL POS UNITS: RADIANS
-    new_right_rads = red_wheel_vel.right_wheel_vel * (dt); // WHEEL POS UNITS: RADIANS
+    new_left_rads = red_wheel_vel.left_wheel_vel * dt;   // WHEEL POS UNITS: RADIANS
+    new_right_rads = red_wheel_vel.right_wheel_vel * dt; // WHEEL POS UNITS: RADIANS
     left_encoder_pos += new_left_rads * encoder_ticks_per_rad;   // UNITS: TICKS
     right_encoder_pos += new_right_rads * encoder_ticks_per_rad; // UNITS: TICKS
     sensor_data.left_encoder = left_encoder_pos;
@@ -176,7 +176,7 @@ private:
     tf_broadcaster->sendTransform(xform_stamped);
   }
 
-  void reset_callback( // TODO: NOT USING CUR_X ANYMORE, FIX
+  void reset_callback( 
       const std::shared_ptr<std_srvs::srv::Trigger::Request>,
       std::shared_ptr<std_srvs::srv::Trigger::Response> response)
   {
@@ -186,7 +186,7 @@ private:
     response->success = true;
   }
 
-  void teleport_callback( // TODO: NOT USING CUR_X ANYMORE, FIX
+  void teleport_callback( 
       const std::shared_ptr<nusim::srv::Teleport::Request> request,
       std::shared_ptr<nusim::srv::Teleport::Response> response)
   {

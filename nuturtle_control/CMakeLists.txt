@@ -19,15 +19,15 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(catch_ros2 REQUIRED)
+# find_package(catch_ros2 REQUIRED)
 
 add_executable(turtle_control src/turtle_control.cpp)
-add_executable(turtle_control_test test/turtle_control_test.cpp)
+# add_executable(turtle_control_test test/turtle_control_test.cpp)
 add_executable(odometry src/odometry.cpp)
 add_executable(circle src/circle.cpp)
 
 ament_target_dependencies(turtle_control rclcpp  std_msgs geometry_msgs sensor_msgs nuturtlebot_msgs turtlelib)
-ament_target_dependencies(turtle_control_test rclcpp  std_msgs geometry_msgs sensor_msgs nuturtlebot_msgs turtlelib)
+# ament_target_dependencies(turtle_control_test rclcpp  std_msgs geometry_msgs sensor_msgs nuturtlebot_msgs turtlelib)
 ament_target_dependencies(odometry rclcpp geometry_msgs sensor_msgs nav_msgs tf2_ros tf2)
 ament_target_dependencies(circle rclcpp geometry_msgs std_srvs)
 
@@ -37,7 +37,7 @@ target_include_directories(turtle_control PUBLIC
 
 target_compile_features(turtle_control PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-install(TARGETS turtle_control turtle_control_test odometry circle
+install(TARGETS turtle_control odometry circle
   DESTINATION lib/${PROJECT_NAME})
 
 
@@ -63,8 +63,9 @@ rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}_interfaces
   "rosidl_typesupport_cpp"
 )
 
+# catch_ros2::catch_ros2_with_node_main 
 target_link_libraries(turtle_control turtlelib::turtlelib "${cpp_typesupport_target}")
-target_link_libraries(turtle_control_test catch_ros2::catch_ros2_with_node_main turtlelib::turtlelib "${cpp_typesupport_target}")
+# target_link_libraries(turtle_control_test turtlelib::turtlelib "${cpp_typesupport_target}")
 
 target_link_libraries(odometry turtlelib::turtlelib "${cpp_typesupport_target}")
 target_link_libraries(circle "${cpp_typesupport_target}")

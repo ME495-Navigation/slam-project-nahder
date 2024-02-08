@@ -43,6 +43,28 @@
     </node>
 
 
+  <group if="$(eval '\'$(var robot)\' == \'localhost\'')">
+        <node pkg="numsr_turtlebot" exec="numsr_turtlebot" /> 
+        
+        <node pkg="nuturtle_control" exec="odometry" name="odometry">
+            <param from= "$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <param name="body_id" value= '$(var body_id)'/>
+            <param name="odom_id" value= '$(var odom_id)'/>
+            <remap from="/joint_states" to="blue/joint_states"/>
+            <param name="wheel_left" value= '$(var wheel_left)'/>
+            <param name="wheel_right" value= '$(var wheel_right)'/>
+        </node>
+
+        <node pkg="nuturtle_control" exec="turtle_control" name="turtle_control">
+            <param from= "$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+            <remap from="/wheel_cmd" to="red/wheel_cmd"/>
+            <remap from="/sensor_data" to="red/sensor_data"/>
+            <remap from="/joint_states" to="blue/joint_states"/>
+        </node>
+
+    </group>
+
+
     <!-- load robot model -->
     <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py" >
         <arg name="color" value="red"/>
