@@ -118,6 +118,7 @@ private:
 
   uint64_t timestep;
 
+  /// @brief Main simulator loop. Publishes encoder values and updates the robot pose in TF
   void timer_callback()
   {
     std_msgs::msg::UInt64 msg;
@@ -129,35 +130,40 @@ private:
     update_xform();
   }
 
-  // STORE WHEEL COMMANDS IN RAD/SEC (converted from MCU)
+  /// @brief Callback for wheel commands
+  /// @param wheel_cmd_msg The wheel commands message
+  /// @details Converts wheel commands from MCU to rad/s
   void wheel_cmd_cb(const nuturtlebot_msgs::msg::WheelCommands & wheel_cmd_msg)
   {
-    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec; // UNITS: radians/sec
+    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec; //MCU
     red_wheel_vel.right_wheel_vel = wheel_cmd_msg.right_velocity * motor_cmd_per_rad_sec;
   }
 
-  // PUBLISH CURRENT WHEEL ENCODER POSITIONS IN TICKS
-  // MOVE THE ROBOT ACCORDINGLY
+  /// @brief Publishes the current wheel encoder positions
   void publish_encoders()
   {
     new_left_rads = red_wheel_vel.left_wheel_vel * dt;           // WHEEL POS UNITS: RADIANS
     new_right_rads = red_wheel_vel.right_wheel_vel * dt;         // WHEEL POS UNITS: RADIANS
+
     left_encoder_pos += new_left_rads * encoder_ticks_per_rad;   // UNITS: TICKS
-    right_encoder_pos += new_right_rads * encoder_ticks_per_rad; // UNITS: TICKS
+    right_encoder_pos += new_right_rads * encoder_ticks_per_rad; // UNITS: TICKS'
+
     sensor_data.left_encoder = left_encoder_pos;
     sensor_data.right_encoder = right_encoder_pos;
     sensor_data_pub->publish(sensor_data); // PUBLISH CURRENT WHEEL ENCODER POSITIONS IN TICKS
   }
 
+  /// @brief Updates the robot pose based on the wheel positions
   void update_robot_pose()
   {
-    wheel_config = turtlelib::wheelVel{new_right_rads, new_left_rads}; // UPDATE ROBOT POSE GIVEN WHEEL CONFIGURATION
+    wheel_config = turtlelib::wheelVel{new_right_rads, new_left_rads};
     red_diff_drive.forwardKinematics(wheel_config);
     red_x = red_diff_drive.get_config().x;
     red_y = red_diff_drive.get_config().y;
     red_theta = red_diff_drive.get_config().theta;
   }
 
+  /// @brief Updates the robot pose in TF
   void update_xform()
   {
     xform_stamped.header.stamp = this->get_clock()->now();
@@ -174,6 +180,7 @@ private:
     tf_broadcaster->sendTransform(xform_stamped);
   }
 
+  /// @brief Restarts the simulation by resetting the robot pose and the timestep
   void reset_callback(
     const std::shared_ptr<std_srvs::srv::Trigger::Request>,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response)
@@ -184,6 +191,7 @@ private:
     response->success = true;
   }
 
+  /// @brief Teleports the robot in simulation to a new pose
   void teleport_callback(
     const std::shared_ptr<nusim::srv::Teleport::Request> request,
     std::shared_ptr<nusim::srv::Teleport::Response> response)
@@ -244,6 +252,11 @@ private:
     return walls;
   }
 
+  /// @brief
+  /// @param x
+  /// @param y
+  /// @param r
+  /// @return
   visualization_msgs::msg::MarkerArray create_obstacles(
     std::vector<double> x, std::vector<double> y, double r)
   {

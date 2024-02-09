@@ -5,64 +5,59 @@
 
 namespace turtlelib
 {
-    
-    DiffDrive::DiffDrive() : wheel_radius(0.033), track_width(0.16) {}
 
-    DiffDrive::DiffDrive(double wheel_radius, double track_width)
-        : wheel_radius(wheel_radius), track_width(track_width) {}
+DiffDrive::DiffDrive()
+: wheel_radius(0.033), track_width(0.16) {}
 
-    void DiffDrive::forwardKinematics(const wheelVel u)
-    {
-        Twist2D delta_q, Vb;
+DiffDrive::DiffDrive(double wheel_radius, double track_width)
+: wheel_radius(wheel_radius), track_width(track_width) {}
 
-        // convert wheel configuration to body twist
-        Vb = computeBodyTwist(u);
+void DiffDrive::forwardKinematics(const wheelVel u)
+{
+  Twist2D delta_q, Vb;
 
-        // integrate the body twist to get the new configuration
-        Transform2D T_b_bp = integrate_twist(Vb);
+  // convert wheel configuration to body twist
+  Vb = computeBodyTwist(u);
 
-        // get the robot location in the world frame
-        Transform2D T_wb{Vector2D{cur_config.x, cur_config.y}, cur_config.theta};
+  // integrate the body twist to get the new configuration
+  Transform2D T_b_bp = integrate_twist(Vb);
 
-        // get the new robot location in the world frame
-        Transform2D T_w_bp = T_wb * T_b_bp;
+  // get the robot location in the world frame
+  Transform2D T_wb{Vector2D{cur_config.x, cur_config.y}, cur_config.theta};
 
-        // update the robot configuration
-        set_config({T_w_bp.translation().x, T_w_bp.translation().y, normalize_angle(T_w_bp.rotation())});
-        // cur_config.x = T_w_bp.translation().x;
-        // cur_config.y = T_w_bp.translation().y;
-        // cur_config.theta = normalize_angle(T_w_bp.rotation());
-    }
+  // get the new robot location in the world frame
+  Transform2D T_w_bp = T_wb * T_b_bp;
 
-    Twist2D DiffDrive::computeBodyTwist(const wheelVel u) const
-    {
-        Twist2D twist;
-        double d{0.5 * track_width};
+  // update the robot configuration
+  set_config({T_w_bp.translation().x, T_w_bp.translation().y, normalize_angle(T_w_bp.rotation())});
+}
 
-        twist.omega = (wheel_radius / (2 * d)) * (u.right_wheel_vel - u.left_wheel_vel);
+Twist2D DiffDrive::computeBodyTwist(const wheelVel u) const
+{
+  Twist2D twist;
+  double d{0.5 * track_width};
 
-        twist.x = (wheel_radius / 2) * (u.right_wheel_vel + u.left_wheel_vel);
+  twist.omega = (wheel_radius / (2 * d)) * (u.right_wheel_vel - u.left_wheel_vel);
 
-        twist.y = 0.0;
+  twist.x = (wheel_radius / 2) * (u.right_wheel_vel + u.left_wheel_vel);
 
-        return twist;
-    }
+  twist.y = 0.0;
 
-    wheelVel DiffDrive::inverseKinematics(const Twist2D twist) const
-    {
-        wheelVel u;
-        double d{0.5 * track_width};
+  return twist;
+}
 
-        if (twist.y != 0.0)
-        {
-            throw std::logic_error("y component of twist must be zero for non-slip conditions");
-        }
-        else
-        {
-            u.right_wheel_vel = (1 / wheel_radius) * (-d * twist.omega + twist.x);
-            u.left_wheel_vel = (1 / wheel_radius) * (d * twist.omega + twist.x);
-            return u;
-        }
-    }
+wheelVel DiffDrive::inverseKinematics(const Twist2D twist) const
+{
+  wheelVel u;
+  double d{0.5 * track_width};
+
+  if (twist.y != 0.0) {
+    throw std::logic_error("y component of twist must be zero for non-slip conditions");
+  } else {
+    u.right_wheel_vel = (1 / wheel_radius) * (-d * twist.omega + twist.x);
+    u.left_wheel_vel = (1 / wheel_radius) * (d * twist.omega + twist.x);
+    return u;
+  }
+}
 
 }

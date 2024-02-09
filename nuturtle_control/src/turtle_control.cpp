@@ -70,7 +70,7 @@ private:
     }
   }
 
-  /// @brief takes in a body twist and publishes wheel vel commands to /wheel_cmd
+  /// @brief takes in a body twist and publishes wheel vel commands in MCU to /wheel_cmd
   /// @param geometry_msg type twist
   void cmd_vel_callback(const geometry_msgs::msg::Twist & twist)
   {
@@ -92,7 +92,7 @@ private:
     wheel_cmd_msg.right_velocity = u.right_wheel_vel;
 
     // publish wheelMsg
-    wheel_cmd_pub->publish(wheel_cmd_msg);
+    wheel_cmd_pub->publish(wheel_cmd_msg); //IN MCU
   }
 
   /// @brief takes in wheel encoder readings and publishes joint states to /joint_states
