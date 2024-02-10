@@ -32,7 +32,7 @@
 - [x] C.4 (walls)
 - [x] C.5 (cylindrical obstacles)
 - [x] C.6 (nusim launch)
-- [ ] C.7 (turtle drive) 
+- [x] C.7 (turtle drive) 
 
 #### Task D (Kinematics) 
 - [x] D.1 (Diffdrive class) 
@@ -41,13 +41,13 @@
 
 #### Task E (Robot control) 
 - [x] E.1 (Turtle interface) 
-- [ ] E.2 (Odometry node) 
-- [ ] E.3 (Circle) 
+- [x] E.2 (Odometry node) 
+- [x] E.3 (Circle) 
 - [ ] E.4 (ROS API Testing) 
-- [ ] E.5 (Launchfile) 
+- [x] E.5 (Launchfile) 
 - [ ] E.6 (Remote Launch) 
 
 #### Task F (The real robot) 
-- [ ] F.1 (Turtlebot setup) 
-- [ ] F.2 (Cross-compilation)
-- [ ] F.5 (Physical testing)
+- [x] F.1 (Turtlebot setup) 
+- [x] F.2 (Cross-compilation)
+- [x] F.5 (Physical testing)
