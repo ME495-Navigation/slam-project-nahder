@@ -52,7 +52,7 @@ wheelVel DiffDrive::inverseKinematics(const Twist2D twist) const
   double d{0.5 * track_width};
 
   if (twist.y != 0.0) {
-    throw std::logic_error("y component of twist must be zero for non-slip conditions");
+    throw std::logic_error("y component of twist must be zero");
   } else {
     u.right_wheel_vel = (1 / wheel_radius) * (-d * twist.omega + twist.x);
     u.left_wheel_vel = (1 / wheel_radius) * (d * twist.omega + twist.x);

@@ -71,7 +71,7 @@ private:
     }
   }
 
-  /// @brief takes in a body twist and publishes wheel vel commands in MCU to /wheel_cmd
+  /// @brief takes in a desired body twist and publishes MCU commands to /wheel_cmd
   /// @param geometry_msg type twist
   void cmd_vel_callback(const geometry_msgs::msg::Twist & twist)
   {
