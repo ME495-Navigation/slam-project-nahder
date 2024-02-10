@@ -116,11 +116,12 @@
                 --frame-id nusim/world
                 --child-frame-id odom"
         />
-
     </group>
 
+<!--########################### Begin_Citation [2] #########################-->
+<!-- Courtney S.-->
     <group if="$(eval '\'$(var robot)\' == \'none\'')">
-  <!-- rviz -->
+        <!-- rviz -->
         <group if="$(eval '\'$(var use_rviz)\' == \'true\'')">
             <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(var control_rviz_cfg)">
             </node>
@@ -146,9 +147,8 @@
                 --frame-id nusim/world
                 --child-frame-id odom"
         />
-
     </group>
-
+<!--########################### End_Citation [2] #########################-->
 
 
 </launch>

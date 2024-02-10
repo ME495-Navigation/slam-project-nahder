@@ -50,8 +50,7 @@ private:
   double wheel_radius, track_width, motor_cmd_max, motor_cmd_per_rad_sec,
     encoder_ticks_per_rad, collision_radius;
 
-  double prev_sensor_time{-1.0};
-  double left_prev{0.0}, right_prev{0.0};
+  double prev_sensor_time{-1.0}, left_prev{0.0}, right_prev{0.0};
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub;
   rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_sub;
@@ -103,8 +102,8 @@ private:
     auto cur_time = msg.stamp.sec + msg.stamp.nanosec * 1e-9;
     double dt{0.0}, left_velocity{0.0}, right_velocity{0.0};
 
-    double left_position = static_cast<double>(msg.left_encoder) / encoder_ticks_per_rad;
-    double right_position = static_cast<double>(msg.right_encoder) / encoder_ticks_per_rad;
+    auto left_position = static_cast<double>(msg.left_encoder) / encoder_ticks_per_rad;
+    auto right_position = static_cast<double>(msg.right_encoder) / encoder_ticks_per_rad;
 
     // check if not the first message
     if (prev_sensor_time > 0.0) {

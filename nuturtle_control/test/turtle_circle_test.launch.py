@@ -15,24 +15,13 @@ def generate_launch_description():
         [
             Node(
                 package="nuturtle_control",
-                executable="odometry",
-                parameters=[
-                    ParameterFile(params_file_path),
-                    {
-                        "body_id": "base_footprint",
-                        "wheel_left": "wheel_left",
-                        "wheel_right": "wheel_right",
-                    },
-                ],
-            ),
-            Node(
-                package="joint_state_publisher",
-                executable="joint_state_publisher",
+                executable="circle",
+                parameters=[ParameterFile(params_file_path)],
             ),
             Catch2IntegrationTestNode(
                 package="nuturtle_control",
-                executable="turtle_odom_test",
-                parameters=[ParameterFile(params_file_path), {"test_duration": 10.0}],
+                executable="turtle_circle_test",
+                parameters=[ParameterFile(params_file_path), {"test_duration": 2.0}],
             ),
         ]
     )

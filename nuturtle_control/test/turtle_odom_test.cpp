@@ -36,8 +36,11 @@ TEST_CASE("Initial pose service", "[odometry]") {
       if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS) {
         if (result.get()->success) {
           try {
-            auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
-            tf2_ros::TransformListener tf_listener(*tf_buffer);
+            std::unique_ptr<tf2_ros::Buffer> tf_buffer =
+              std::make_unique<tf2_ros::Buffer>(node->get_clock());
+
+            std::shared_ptr<tf2_ros::TransformListener> tf_listener =
+              std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
             auto t = tf_buffer->lookupTransform("odom", "base_footprint", tf2::TimePointZero);
             xform_found = true;
             REQUIRE_THAT(t.transform.translation.x, Catch::Matchers::WithinAbs(1.0, 1e-5));
@@ -63,10 +66,11 @@ TEST_CASE("odom->base_footprint transform", "[odometry]") {
   const auto TEST_DURATION =
     node->get_parameter("test_duration").get_parameter_value().get<double>();
 
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_ =
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer =
     std::make_unique<tf2_ros::Buffer>(node->get_clock());
+
   std::shared_ptr<tf2_ros::TransformListener> tf_listener =
-    std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+    std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
 
   rclcpp::Time start_time = rclcpp::Clock().now();
 
@@ -74,7 +78,7 @@ TEST_CASE("odom->base_footprint transform", "[odometry]") {
     ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(TEST_DURATION)))
   {
     try {
-      auto t = tf_buffer_->lookupTransform("odom", "base_footprint", tf2::TimePointZero);
+      auto t = tf_buffer->lookupTransform("odom", "base_footprint", tf2::TimePointZero);
       xform_found = true;
     } catch (const tf2::TransformException & ex) {
       return;

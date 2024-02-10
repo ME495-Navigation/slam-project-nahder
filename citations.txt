@@ -1,6 +1,10 @@
 Worked with: Courtney Smith, Carter DiOrio, Maximiliano Palay, Demiana Barsoum
 
-
 [1] https://answers.ros.org/question/337885/is-teleop_twist_keyboard-launchable-in-ros2/ Accessed
 on 2/9/24
-[3] 
+[2] Courtney and I worked together to complete this portion of the launchfile.
+[3] Helped by Max, Courtney to reorder the Cmakelists.txt  
+
+
+Max, Courtney, and Carter also helped with the filming setup for the demo video. 
+

@@ -1,5 +1,3 @@
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
 from launch_catch_ros2 import Catch2IntegrationTestNode, Catch2LaunchDescription
 from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution

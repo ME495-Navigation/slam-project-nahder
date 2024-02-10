@@ -5,7 +5,6 @@
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 
-
 using namespace std::chrono_literals;
 
 auto left_wheel_vel{0.0}, right_wheel_vel{0.0}, left_joint_pos{0.0}, right_joint_pos{0.0},
@@ -21,12 +20,11 @@ void wheel_cmd_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
 
 void joint_states_callback(const sensor_msgs::msg::JointState msg)
 {
-  left_joint_pos = msg.position[0];
-  right_joint_pos = msg.position[1];
-  left_joint_vel = msg.velocity[0];
-  right_joint_vel = msg.velocity[1];
+  left_joint_pos = msg.position.at(0);
+  right_joint_pos = msg.position.at(1);
+  left_joint_vel = msg.velocity.at(0);
+  right_joint_vel = msg.velocity.at(1);
 }
-
 
 //Testing the conversion from cmd_vel (desired body twist) to wheel_cmd (MCU) for pure translation
 TEST_CASE("Pure translation", "[controller]")

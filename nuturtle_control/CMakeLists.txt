@@ -39,6 +39,8 @@ target_link_libraries(odometry turtlelib::turtlelib "${cpp_typesupport_target}")
 target_link_libraries(circle turtlelib::turtlelib "${cpp_typesupport_target}")
 
 install(TARGETS turtle_control DESTINATION lib/${PROJECT_NAME})
+install(TARGETS odometry DESTINATION lib/${PROJECT_NAME})
+install(TARGETS circle DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME}/)
 
 if(BUILD_TESTING)
@@ -47,11 +49,11 @@ if(BUILD_TESTING)
 find_package(catch_ros2 REQUIRED)
 add_executable(turtle_control_test test/turtle_control_test.cpp)
 add_executable(turtle_odom_test test/turtle_odom_test.cpp)
-# add_executable(turtle_circle_test test/turtle_circle_test.cpp)
+add_executable(turtle_circle_test test/turtle_circle_test.cpp)
 
 target_link_libraries(turtle_control_test catch_ros2::catch_ros2_with_node_main)
 target_link_libraries(turtle_odom_test catch_ros2::catch_ros2_with_node_main "${cpp_typesupport_target}")
-# target_link_libraries(turtle_circle_test catch_ros2::catch_ros2_with_node_main "${cpp_typesupport_target}")
+target_link_libraries(turtle_circle_test catch_ros2::catch_ros2_with_node_main "${cpp_typesupport_target}")
 
 ament_target_dependencies(
   turtle_control_test
@@ -67,21 +69,21 @@ ament_target_dependencies(
   tf2
   tf2_ros
 )
-# ament_target_dependencies(
-#   turtle_circle_test
-#   rclcpp
-#   geometry_msgs
-#   catch_ros2
-# )
+ament_target_dependencies(
+  turtle_circle_test
+  rclcpp
+  geometry_msgs
+  catch_ros2
+)
 
 install(TARGETS turtle_control_test DESTINATION lib/${PROJECT_NAME})
 install(TARGETS turtle_odom_test DESTINATION lib/${PROJECT_NAME})
-# install(TARGETS turtle_circle_test DESTINATION lib/${PROJECT_NAME})
+install(TARGETS turtle_circle_test DESTINATION lib/${PROJECT_NAME})
 
 install(FILES
   test/turtle_control_test.launch.py
   test/turtle_odom_test.launch.py
-  # test/turtle_circle_test.launch.py
+  test/turtle_circle_test.launch.py
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -91,9 +93,9 @@ LAUNCH_FILE turtle_control_test.launch.py
 catch_ros2_add_integration_test(turtle_odom_test
 LAUNCH_FILE turtle_odom_test.launch.py
 )
-# catch_ros2_add_integration_test(turtle_circle_test
-# LAUNCH_FILE turtle_circle_test.launch.xml
-# )
+catch_ros2_add_integration_test(turtle_circle_test
+LAUNCH_FILE turtle_circle_test.launch.py
+)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
