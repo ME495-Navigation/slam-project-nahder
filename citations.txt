@@ -1,4 +1,4 @@
-Worked with: Courtney Smith, Carter DiOrio, Maximiliano Palay, Demiana Barsoum
+Worked with: Courtney Smith, Carter DiOrio, Maximiliano Palay, Demiana Barsoum, Damien Koh,
 
 [1] https://answers.ros.org/question/337885/is-teleop_twist_keyboard-launchable-in-ros2/ Accessed
 on 2/9/24
