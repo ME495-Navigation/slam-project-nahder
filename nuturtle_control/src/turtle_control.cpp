@@ -55,6 +55,7 @@ private:
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub;
   rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_sub;
+
   rclcpp::Publisher<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_cmd_pub;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_states_pub;
 
@@ -99,32 +100,29 @@ private:
   /// @param sensor_data
   void sensor_data_callback(const nuturtlebot_msgs::msg::SensorData & msg)
   {
-    auto current_time = msg.stamp.sec + msg.stamp.nanosec * 1e-9;
+    auto cur_time = msg.stamp.sec + msg.stamp.nanosec * 1e-9;
+    double dt{0.0}, left_velocity{0.0}, right_velocity{0.0};
+
     double left_position = static_cast<double>(msg.left_encoder) / encoder_ticks_per_rad;
     double right_position = static_cast<double>(msg.right_encoder) / encoder_ticks_per_rad;
-    double elapsed_time{0.0};
-    double left_velocity{0.0};
-    double right_velocity{0.0};
 
     // check if not the first message
     if (prev_sensor_time > 0.0) {
-      elapsed_time = current_time - prev_sensor_time;
-      left_velocity = (left_position - left_prev) / elapsed_time;
-      right_velocity = (right_position - right_prev) / elapsed_time;
+      dt = cur_time - prev_sensor_time;
+      left_velocity = (left_position - left_prev) / dt;
+      right_velocity = (right_position - right_prev) / dt;
     }
+    sensor_msgs::msg::JointState joint_states_msg;
+    joint_states_msg.header.stamp = get_clock()->now();
+    joint_states_msg.name = {"wheel_left_joint", "wheel_right_joint"};
+    joint_states_msg.position = {left_position, right_position}; // in rad
+    joint_states_msg.velocity = {left_velocity, right_velocity}; // in rad/s
+    joint_states_pub->publish(joint_states_msg);
 
     // update the prevs for next iteration
     left_prev = left_position;
     right_prev = right_position;
-    prev_sensor_time = current_time;
-
-    sensor_msgs::msg::JointState joint_states_msg;
-    joint_states_msg.header.stamp = get_clock()->now();
-    joint_states_msg.name = {"wheel_left_joint", "wheel_right_joint"};
-    joint_states_msg.position = {left_position, right_position}; // in radians
-
-    joint_states_msg.velocity = {left_velocity, right_velocity}; // in rad/s
-    joint_states_pub->publish(joint_states_msg);
+    prev_sensor_time = cur_time;
   }
 };
 

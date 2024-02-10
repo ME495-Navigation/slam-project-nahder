@@ -1,29 +1,29 @@
-<launch>
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_catch_ros2 import Catch2IntegrationTestNode, Catch2LaunchDescription
+from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterFile
 
-    <!-- Specific launch arguments can also be included at the user's discretion -->
-    <arg 
-        name='test_duration'
-        default='2.0'
-        description='Max length of test in seconds.'
-    />
 
-    <!-- Auxiliary nodes can be run like normal to test integration between nodes -->
-    <node pkg='nuturtle_control' exec='turtle_control'>
-        <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-    </node>
+def generate_launch_description():
 
-    <!--
-    catch2_integration_test_node
-    a wrapper around node which passes the "result_file" argument to Catch2.
-    There should only be one integration test node. This node will shutdown
-    the entire launch file when it exits.
-    Specific parameters and other arguments can also be passed, like the
-    "test_duration" example below.
-    -->
-    <catch2_integration_test_node
-        pkg='nuturtle_control'
-        exec='turtle_control_test'
-    >
-        <param name='test_duration' value='$(var test_duration)'/>
-    </catch2_integration_test_node>
-</launch>
+    params_file_path = PathJoinSubstitution(
+        [FindPackageShare("nuturtle_description"), "config", "diff_params.yaml"]
+    )
+
+    return Catch2LaunchDescription(
+        [
+            Node(
+                package="nuturtle_control",
+                executable="turtle_control",
+                parameters=[ParameterFile(params_file_path)],
+            ),
+            Catch2IntegrationTestNode(
+                package="nuturtle_control",
+                executable="turtle_control_test",
+                parameters=[ParameterFile(params_file_path), {"test_duration": 2.0}],
+            ),
+        ]
+    )
