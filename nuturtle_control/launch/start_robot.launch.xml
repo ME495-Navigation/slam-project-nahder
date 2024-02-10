@@ -1,3 +1,5 @@
+
+
 <launch>
   <arg name="body_id" default="blue/base_footprint"/>
   <arg name="odom_id" default="odom"/>
@@ -27,11 +29,13 @@
       </node>
   </group>
 
-  <!-- teleop command node-->
-  <!-- TODO: CITE https://Ftics.stackexchange.com/questions/93858/is-teleop-twist-keyboard-launchable-in-ros2 -->
+  <!--########################### Begin_Citation [1] #########################-->
+  <!-- answers.ros.org -->
+  <!-- teleop node -->
   <group if="$(eval '\'$(var cmd_src)\' == \'teleop\'')">
         <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" output="screen" launch-prefix="xterm -e" />
   </group>
+  <!--########################### End_Citation [1] #########################-->
 
   <group if="$(eval '\'$(var robot)\' == \'localhost\'')">
         <node pkg="numsr_turtlebot" exec="numsr_turtlebot" /> 

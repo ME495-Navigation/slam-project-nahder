@@ -8,15 +8,10 @@
 
 using namespace std::chrono_literals;
 
-//turtle_control is running
-//turtle control:
-//  - subscribes to cmd_vel (tw) --> publishes wheel_cmd (MCU)
-//  - subscribes to sensor_data (ticks) --> publishes joint_states (radians)
-
 auto left_wheel_vel{0.0}, right_wheel_vel{0.0}, left_joint_pos{0.0}, right_joint_pos{0.0},
 left_joint_vel{0.0}, right_joint_vel{0.0};
 
-bool sub_found{false};
+auto sub_found{false};
 
 void wheel_cmd_callback(const nuturtlebot_msgs::msg::WheelCommands msg)
 {
@@ -31,6 +26,7 @@ void joint_states_callback(const sensor_msgs::msg::JointState msg)
   left_joint_vel = msg.velocity[0];
   right_joint_vel = msg.velocity[1];
 }
+
 
 //Testing the conversion from cmd_vel (desired body twist) to wheel_cmd (MCU) for pure translation
 TEST_CASE("Pure translation", "[controller]")

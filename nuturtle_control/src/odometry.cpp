@@ -137,15 +137,10 @@ private:
   {
     turtlelib::robotConfig config{request->x, request->y, request->theta};
     turtleBot.set_config(config);
-    // TODO: maybe wasn't the best idea to add a setter.
-    // can instead use the assignment operator,
-    // but need to add a constructor which takes in a configuration instead of just wheel radius and track width
-    // currently, the constructor initializes the configuration to 0,0,0 through the robotConfig struct defaults
 
     RCLCPP_INFO_STREAM(
-      this->get_logger(), "Setting initial pose to x: " << request->x << " y: "
-                                                        << request->y << " theta: " <<
-      request->theta);
+      get_logger(), "Setting initial pose to x: " << request->x << " y: "
+                                                  << request->y << " theta: " << request->theta);
     response->success = true;
   }
 };

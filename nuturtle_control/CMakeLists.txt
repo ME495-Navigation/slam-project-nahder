@@ -46,11 +46,11 @@ if(BUILD_TESTING)
 # integration testing
 find_package(catch_ros2 REQUIRED)
 add_executable(turtle_control_test test/turtle_control_test.cpp)
-# add_executable(turtle_odom_test test/turtle_odom_test_node.cpp)
+add_executable(turtle_odom_test test/turtle_odom_test.cpp)
 # add_executable(turtle_circle_test test/turtle_circle_test.cpp)
 
 target_link_libraries(turtle_control_test catch_ros2::catch_ros2_with_node_main)
-# target_link_libraries(turtle_odom_test catch_ros2::catch_ros2_with_node_main "${cpp_typesupport_target}")
+target_link_libraries(turtle_odom_test catch_ros2::catch_ros2_with_node_main "${cpp_typesupport_target}")
 # target_link_libraries(turtle_circle_test catch_ros2::catch_ros2_with_node_main "${cpp_typesupport_target}")
 
 ament_target_dependencies(
@@ -61,13 +61,12 @@ ament_target_dependencies(
   catch_ros2
   sensor_msgs
 )
-
-# ament_target_dependencies(
-#   turtle_odom_test
-#   rclcpp
-#   tf2
-#   tf2_ros
-# )
+ament_target_dependencies(
+  turtle_odom_test
+  rclcpp
+  tf2
+  tf2_ros
+)
 # ament_target_dependencies(
 #   turtle_circle_test
 #   rclcpp
@@ -76,22 +75,22 @@ ament_target_dependencies(
 # )
 
 install(TARGETS turtle_control_test DESTINATION lib/${PROJECT_NAME})
-# install(TARGETS turtle_odom_test DESTINATION lib/${PROJECT_NAME})
+install(TARGETS turtle_odom_test DESTINATION lib/${PROJECT_NAME})
 # install(TARGETS turtle_circle_test DESTINATION lib/${PROJECT_NAME})
 
 install(FILES
   test/turtle_control_test.launch.py
-  # test/turtle_odom_test.launch.xml
-  # test/turtle_circle_test.launch.xml
+  test/turtle_odom_test.launch.py
+  # test/turtle_circle_test.launch.py
   DESTINATION share/${PROJECT_NAME}
 )
 
 catch_ros2_add_integration_test(turtle_control_test
 LAUNCH_FILE turtle_control_test.launch.py
 )
-# catch_ros2_add_integration_test(turtle_odom_test
-# LAUNCH_FILE turtle_odom_test.launch.xml
-# )
+catch_ros2_add_integration_test(turtle_odom_test
+LAUNCH_FILE turtle_odom_test.launch.py
+)
 # catch_ros2_add_integration_test(turtle_circle_test
 # LAUNCH_FILE turtle_circle_test.launch.xml
 # )
