@@ -4,7 +4,7 @@ Worked with: Courtney Smith, Carter DiOrio, Maximiliano Palay, Demiana Barsoum
 on 2/9/24
 [2] Courtney and I worked together to complete this portion of the launchfile.
 [3] Helped by Max, Courtney to reorder the Cmakelists.txt  
-
+[4] Worked on this test case with Demiana
 
 Max, Courtney, and Carter also helped with the filming setup for the demo video. 
 

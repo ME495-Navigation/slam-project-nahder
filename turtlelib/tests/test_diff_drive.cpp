@@ -8,7 +8,6 @@
 
 namespace turtlelib
 {
-
 TEST_CASE("Error checking twist", "[diff drive]")
 {
   double wheelRadius{0.12};
@@ -23,7 +22,7 @@ TEST_CASE("Error checking twist", "[diff drive]")
     robot.inverseKinematics(desiredTwist);
   } catch (const std::logic_error & e) {
     caughtException = true;
-    std::string expectedMessage = "y component of twist must be zero for non-slip conditions";
+    std::string expectedMessage = "y component of twist must be zero";
     REQUIRE(std::string(e.what()) == expectedMessage);
   }
 

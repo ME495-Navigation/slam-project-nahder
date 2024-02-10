@@ -73,7 +73,11 @@ ament_target_dependencies(
   turtle_circle_test
   rclcpp
   geometry_msgs
+  nuturtlebot_msgs
   catch_ros2
+  std_srvs
+  sensor_msgs
+  turtlelib
 )
 
 install(TARGETS turtle_control_test DESTINATION lib/${PROJECT_NAME})
