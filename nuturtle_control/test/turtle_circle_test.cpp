@@ -1,54 +1,57 @@
-// #include "catch_ros2/catch_ros2.hpp"
-// #include "rclcpp/rclcpp.hpp"
-// #include "nuturtle_control/srv/control.hpp"
-// #include "geometry_msgs/msg/twist.hpp"
+#include "catch_ros2/catch_ros2.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "std_srvs/srv/empty.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "nuturtlebot_msgs/msg/wheel_commands.hpp"
+#include "nuturtlebot_msgs/msg/sensor_data.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
+#include "nuturtle_control/srv/control.hpp"
 
-// using namespace std::chrono_literals;
+// ############################ Begin_Citation [4] ############################
+// Citation: Demiana B.
+using namespace std::chrono_literals;
+double count{0.0};
 
-// int count = 0;
-// void vel_cb(const geometry_msgs::msg::Twist::SharedPtr)
-// {
-//   count = count + 1;
-// }
+TEST_CASE("Test circle_test_node", "[circle_node]") {
+  auto node = rclcpp::Node::make_shared("turtle_circle_test");
 
-// TEST_CASE("circle frequency", "[odom]") {
+  auto cmd_vel_sub = node->create_subscription<geometry_msgs::msg::Twist>(
+    "cmd_vel", 10, [](const geometry_msgs::msg::Twist::SharedPtr) {
+      count += 1.0;
+    });
 
-//   auto node = rclcpp::Node::make_shared("turtle_circle_test");
+  auto control_srv_client = node->create_client<nuturtle_control::srv::Control>("control");
 
-//   node->declare_parameter<double>("test_duration");
-//   const auto TEST_DURATION =
-//     node->get_parameter("test_duration").get_parameter_value().get<double>();
+  rclcpp::Time start_time = rclcpp::Clock().now();
+  while (rclcpp::ok() &&
+    ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(2)))
+  {
+    if (control_srv_client->wait_for_service(0s)) {
+      break;
+    }
+    rclcpp::spin_some(node);
+  }
 
-//   // Create a client and publisher
-//   auto client = node->create_client<nuturtle_control::srv::Control>("~/control");
-//   auto sub_cmd_vel = node->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, &vel_cb);
+  auto request = std::make_shared<nuturtle_control::srv::Control::Request>();
+  request->velocity = 1.0;
+  request->radius = 0.1;
 
-//   auto request = std::make_shared<nuturtle_control::srv::Control::Request>();
-//   request->velocity = 1.0;
-//   request->radius = 0.5;
+  auto result = control_srv_client->async_send_request(request);
 
-//   while (!client->wait_for_service(1s)) {
-//     rclcpp::spin_some(node);
-//   }
+  while (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
+  }
 
-//   auto result = client->async_send_request(request);
+  start_time = rclcpp::Clock().now();
+  rclcpp::Time end_time = rclcpp::Clock().now();
+  while (rclcpp::ok() &&
+    ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(2))
+  )
+  {
+    end_time = rclcpp::Clock().now();
+    rclcpp::spin_some(node);
+  }
 
-//   while (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
-//     rclcpp::spin_some(node);
-//   }
-
-//   rclcpp::Time start_time = rclcpp::Clock().now();
-//   rclcpp::Time end_time = rclcpp::Clock().now();
-//   while (
-//     rclcpp::ok() &&
-//     ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(TEST_DURATION))
-//   )
-//   {
-//     end_time = rclcpp::Clock().now();
-//   }
-
-//   auto diff = end_time - start_time;
-//   double hz = count / diff.seconds();
-
-//   REQUIRE_THAT(hz, Catch::Matchers::WithinAbs(100.0, 10.0));
-// }
+  RCLCPP_INFO(node->get_logger(), "count: %f", count / (end_time - start_time).seconds());
+  REQUIRE_THAT(count / (end_time - start_time).seconds(), Catch::Matchers::WithinAbs(100.0, 5.0));
+}
+// ############################ End_Citation [4] ############################
