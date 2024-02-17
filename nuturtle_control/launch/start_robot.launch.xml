@@ -39,7 +39,7 @@
 
   <group if="$(eval '\'$(var robot)\' == \'localhost\'')">
         <node pkg="numsr_turtlebot" exec="numsr_turtlebot" /> 
-        
+    
         <node pkg="nuturtle_control" exec="odometry" name="odometry">
             <param from= "$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
             <param name="body_id" value= 'blue/base_footprint'/>
@@ -52,8 +52,12 @@
         <node pkg="nuturtle_control" exec="turtle_control" name="turtle_control">
             <param from= "$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
              <remap from="joint_states" to="blue/joint_states"/>
-
         </node>
+
+        <node pkg="hls_lfcd_lds_driver" exec="hlds_laser_publisher">
+            <param name="port" value="/dev/ttyUSB0"/>
+        </node>
+        
     </group>
 
 

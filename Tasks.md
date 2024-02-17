@@ -54,7 +54,7 @@
 - [x] F.1 (turtlebot setup) 
 - [x] F.2 (tross-compilation)
 - [x] F.5 (physical testing)
-- [ ] F.6 (laser scanner)
+- [x] F.6 (laser scanner)
   
 #### Task V (Visualization)
 - [ ] V.1 (simulation standalone)

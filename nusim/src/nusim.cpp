@@ -166,7 +166,7 @@ private:
   /// @brief Updates the robot pose in TF
   void update_xform()
   {
-    xform_stamped.header.stamp = this->get_clock()->now();
+    xform_stamped.header.stamp = get_clock()->now();
     xform_stamped.header.frame_id = "nusim/world";
     xform_stamped.child_frame_id = "red/base_footprint";
     xform_stamped.transform.translation.x = red_x;
@@ -185,9 +185,11 @@ private:
     const std::shared_ptr<std_srvs::srv::Trigger::Request>,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response)
   {
-    RCLCPP_INFO_STREAM(this->get_logger(), "resetting timestep and pose");
+    RCLCPP_INFO_STREAM(get_logger(), "resetting timestep and pose");
 
     red_x = x0, red_y = y0, red_theta = theta0, timestep = 0;
+    left_encoder_pos = 0, right_encoder_pos = 0;
+    red_diff_drive.set_config({red_x, red_y, red_theta});
     response->success = true;
   }
 
@@ -197,10 +199,11 @@ private:
     std::shared_ptr<nusim::srv::Teleport::Response> response)
   {
     RCLCPP_INFO_STREAM(
-      this->get_logger(),
+      get_logger(),
       "teleporting to " << request->x << ", " << request->y << ", " << request->theta);
 
     red_x = request->x, red_y = request->y, red_theta = request->theta;
+    red_diff_drive.set_config({red_x, red_y, red_theta});
     response->success = true;
   }
 
@@ -216,7 +219,7 @@ private:
       {
         visualization_msgs::msg::Marker wall;
         wall.header.frame_id = "nusim/world";
-        wall.header.stamp = this->get_clock()->now();
+        wall.header.stamp = get_clock()->now();
         wall.ns = "arena_walls";
         wall.id = id;
         wall.type = visualization_msgs::msg::Marker::CUBE;
@@ -263,7 +266,7 @@ private:
 
     if (x.size() != y.size()) {
       RCLCPP_ERROR_STREAM(
-        this->get_logger(),
+        get_logger(),
         "number of x and y coordinates must be the same");
 
       throw std::runtime_error("obstacle list size mismatch, exiting");
@@ -277,7 +280,7 @@ private:
       {
         visualization_msgs::msg::Marker obstacle;
         obstacle.header.frame_id = "nusim/world";
-        obstacle.header.stamp = this->get_clock()->now();
+        obstacle.header.stamp = get_clock()->now();
         obstacle.ns = "obstacles";
         obstacle.id = id;
         obstacle.type = visualization_msgs::msg::Marker::CYLINDER;
