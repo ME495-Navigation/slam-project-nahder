@@ -8,10 +8,10 @@
 #include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "turtlelib/diff_drive.hpp"
-
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
-
+#include "nav_msgs/msg/path.hpp"
+#include <random>
 using namespace std::chrono_literals;
 
 class NUSim : public rclcpp::Node
@@ -53,6 +53,10 @@ public:
     sensor_data_pub = create_publisher<nuturtlebot_msgs::msg::SensorData>(
       "red/sensor_data", 10);
 
+    path_pub = create_publisher<nav_msgs::msg::Path>(
+      "red/path", 10);
+
+
     declare_parameter("rate", 200.0);
     declare_parameter("x0", 0.0);
     declare_parameter("y0", 0.0);
@@ -64,6 +68,8 @@ public:
     declare_parameter("obstacles.x", std::vector<double>{1.0, 2.0, 3.0});
     declare_parameter("obstacles.y", std::vector<double>{1.0, 2.0, 3.0});
     declare_parameter("obstacles.r", 0.5);
+    declare_parameter("input_noise", 0.0);
+    declare_parameter("slip_fraction", 0.0);
 
     rate = get_parameter("rate").as_double();
     x0 = get_parameter("x0").as_double();
@@ -76,6 +82,8 @@ public:
     obstacle_r = get_parameter("obstacles.r").as_double();
     motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
+    input_noise = get_parameter("input_noise").as_double();
+    slip_fraction = get_parameter("slip_fraction").as_double();
 
     red_x = x0, red_y = y0, red_theta = theta0;
 
@@ -87,6 +95,10 @@ public:
     auto obstacles_msg{create_obstacles(obstacles_x, obstacles_y, obstacle_r)};
     obstacles_pub->publish(obstacles_msg);
     dt = 1.0 / rate;
+
+
+    noise_gaussian = std::normal_distribution<>(0.0, std::sqrt(input_noise));
+    slip_gaussian = std::uniform_real_distribution<>{-1.0 * slip_fraction, slip_fraction};
   }
 
 private:
@@ -101,6 +113,11 @@ private:
   turtlelib::DiffDrive red_diff_drive;
   nuturtlebot_msgs::msg::SensorData sensor_data;
 
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub;
+  nav_msgs::msg::Path path_msg;
+  std::normal_distribution<> noise_gaussian;
+  std::uniform_real_distribution<> slip_gaussian;
+
   double left_encoder_pos{0.0}, right_encoder_pos{0.0};
   double new_left_rads{0.0}, new_right_rads{0.0};
   turtlelib::wheelVel wheel_config{0.0, 0.0};
@@ -109,14 +126,25 @@ private:
   geometry_msgs::msg::TransformStamped xform_stamped;
   tf2::Quaternion q;
 
+
   double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length,
-    arena_y_length, obstacle_r, rate, motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt;
+    arena_y_length, obstacle_r, rate, motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt, input_noise,
+    slip_fraction;
 
   turtlelib::wheelVel red_wheel_vel{0.0, 0.0};
 
   std::vector<double> obstacles_x, obstacles_y;
 
   uint64_t timestep;
+
+  std::mt19937 & get_random()
+  {
+    static std::random_device rd{};
+    static std::mt19937 mt{rd()};
+    // we return a reference to the pseudo-random number genrator object. This is always the
+    // same object every time get_random is called
+    return mt;
+  }
 
   /// @brief Main simulator loop. Publishes encoder values and updates the robot pose in TF
   void timer_callback()
@@ -130,20 +158,37 @@ private:
     update_xform();
   }
 
-  /// @brief Callback for wheel commands
+  /// @brief Callback for wheel commands (in MCU, [-265, 265])
   /// @param wheel_cmd_msg The wheel commands message
   /// @details Converts wheel commands from MCU to rad/s
   void wheel_cmd_cb(const nuturtlebot_msgs::msg::WheelCommands & wheel_cmd_msg)
   {
-    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec; //MCU
+    auto noise = noise_gaussian(get_random());
+    //log the slip value with RCLP_INFO (NOT STREAM)
+    RCLCPP_INFO(get_logger(), "noise: %f", noise);
+    //calculate wheel commands in rad/s
+    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec; // UNITS: RAD/S
     red_wheel_vel.right_wheel_vel = wheel_cmd_msg.right_velocity * motor_cmd_per_rad_sec;
+
+    //add zero-mean Gaussian noise with variance input_noise when red_wheel_vel != 0 (confident in stopping)
+    if (red_wheel_vel.left_wheel_vel != 0.0) {
+      red_wheel_vel.left_wheel_vel += noise;
+    }
+    if (red_wheel_vel.right_wheel_vel != 0.0) {
+      red_wheel_vel.right_wheel_vel += noise;
+    }
+
   }
 
   /// @brief Publishes the current wheel encoder positions
   void publish_encoders()
   {
-    new_left_rads = red_wheel_vel.left_wheel_vel * dt;           // WHEEL POS UNITS: RADIANS
-    new_right_rads = red_wheel_vel.right_wheel_vel * dt;         // WHEEL POS UNITS: RADIANS
+    auto slip = slip_gaussian(get_random());
+    //log the slip value with RCLP_INFO (NOT STREAM)
+    RCLCPP_INFO(get_logger(), "slip: %f", slip);
+
+    new_left_rads = red_wheel_vel.left_wheel_vel * (1.0 + slip) * dt;   // WHEEL POS UNITS: RADIANS
+    new_right_rads = red_wheel_vel.right_wheel_vel * (1.0 + slip) * dt; // WHEEL POS UNITS: RADIANS
 
     left_encoder_pos += new_left_rads * encoder_ticks_per_rad;   // UNITS: TICKS
     right_encoder_pos += new_right_rads * encoder_ticks_per_rad; // UNITS: TICKS'
@@ -163,7 +208,7 @@ private:
     red_theta = red_diff_drive.get_config().theta;
   }
 
-  /// @brief Updates the robot pose in TF
+  /// @brief Updates the robot pose and path in TF
   void update_xform()
   {
     xform_stamped.header.stamp = get_clock()->now();
@@ -178,6 +223,19 @@ private:
     xform_stamped.transform.rotation.z = q.z();
     xform_stamped.transform.rotation.w = q.w();
     tf_broadcaster->sendTransform(xform_stamped);
+
+    path_msg.header.stamp = get_clock()->now();
+    path_msg.header.frame_id = "nusim/world";
+    geometry_msgs::msg::PoseStamped pose_stamped;
+    pose_stamped.pose.position.x = red_x;
+    pose_stamped.pose.position.y = red_y;
+    pose_stamped.pose.position.z = 0.0;
+    pose_stamped.pose.orientation.x = q.x();
+    pose_stamped.pose.orientation.y = q.y();
+    pose_stamped.pose.orientation.z = q.z();
+    pose_stamped.pose.orientation.w = q.w();
+    path_msg.poses.push_back(pose_stamped);
+    path_pub->publish(path_msg);
   }
 
   /// @brief Restarts the simulation by resetting the robot pose and the timestep

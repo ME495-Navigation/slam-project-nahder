@@ -17,6 +17,7 @@ find_package(tf2_ros REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(nuturtlebot_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 add_executable(nusim src/nusim.cpp)
 
@@ -29,6 +30,7 @@ ament_target_dependencies(
   tf2_ros
   visualization_msgs
   nuturtlebot_msgs
+  nav_msgs
 )
 
 install(TARGETS
