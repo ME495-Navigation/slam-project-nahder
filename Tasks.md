@@ -33,21 +33,38 @@
 - [x] C.5 (cylindrical obstacles)
 - [x] C.6 (nusim launch)
 - [x] C.7 (turtle drive) 
+- [ ] C.9 (robot position) 
+- [ ] C.10 (basic sensor) 
+- [ ] C.11 (collision detection) 
+- [ ] C.12 (LiDAR) 
 
 #### Task D (Kinematics) 
 - [x] D.1 (Diffdrive class) 
 - [x] D.2 (Diffdrive test) 
-- [x] D.3 (Documentation) 
+- [x] D.3 (documentation) 
 
 #### Task E (Robot control) 
-- [x] E.1 (Turtle interface) 
-- [x] E.2 (Odometry node) 
-- [x] E.3 (Circle) 
-- [ ] E.4 (ROS API Testing) 
-- [x] E.5 (Launchfile) 
-- [ ] E.6 (Remote Launch) 
+- [x] E.1 (turtle interface) 
+- [x] E.2 (odometry node) 
+- [x] E.3 (circle) 
+- [x] E.4 (ROS API Testing) 
+- [x] E.5 (launchfile) 
 
 #### Task F (The real robot) 
-- [x] F.1 (Turtlebot setup) 
-- [x] F.2 (Cross-compilation)
-- [x] F.5 (Physical testing)
+- [x] F.1 (turtlebot setup) 
+- [x] F.2 (tross-compilation)
+- [x] F.5 (physical testing)
+- [ ] F.6 (laser scanner)
+  
+#### Task V (Visualization)
+- [ ] V.1 (simulation standalone)
+- [ ] V.2 (simulation with odometry) 
+- [ ] V.3 (real robot with odometry) 
+- [ ] V.4 (simulated robot with SLAM) 
+
+#### Task L (SLAM)
+- [ ] L.1 (main SLAM results)
+- [ ] L.2 (SLAM in a controlled environment) 
+  
+  
+
