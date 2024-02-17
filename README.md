@@ -6,17 +6,20 @@ This repository consists of several ROS packages
 - `nuturtle_description`: visualizes multiple turtlebots of different colors in rviz
 - `turtlelib`: provides SE(2) transformation methods and SVG visualization
 - `nusim`: initializes simulation environment with walls and obstacles
+- `nuturtle_control`: controls the turtlebot and updates its odometry estimate (integration tests included)
 
 
 # Demo
-
-Running simulator:
+To run the simulator, execute:
 `ros2 launch nuturtle_control start_robot.launch.xml robot:=nusim cmd_src:=teleop use_rviz:=true`
 
-Running on turtlebot:
+To run with physical hardware, ssh into the turtlebot and run:
 `ros2 launch nuturtle_control start_robot.launch.xml robot:=localhost cmd_src:=none use_rviz:=false`
+
+On your own laptop, run:
 `ros2 launch nuturtle_control start_robot.launch.xml robot:=none cmd_src:=none use_rviz:=true`
 
+The odometry estimate after returning to the initial position was `x:.44507, y:0.0002199`. 
 
 <video src="https://github.com/ME495-Navigation/slam-project-nahder/assets/71537050/53fe6094-3c2d-410a-861c-9a2a37c1fa53"></video>
 

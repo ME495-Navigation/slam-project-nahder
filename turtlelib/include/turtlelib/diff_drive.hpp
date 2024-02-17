@@ -1,66 +1,73 @@
-
-
 #include "turtlelib/geometry2d.hpp"
 #include "turtlelib/se2d.hpp"
 
 namespace turtlelib
 {
 
-    /// @brief robot configuration
-    struct robotConfig
-    {
-        double x{0.0};
-        double y{0.0};
-        double theta{0.0};
-    };
+/// @brief robot configuration
+struct robotConfig
+{
+/// @brief x position
+  double x{0.0};
 
-    /// @brief wheel velocities
-    struct wheelVel
-    {
-        double left_wheel_vel{0.0};
-        double right_wheel_vel{0.0};
-    };
+/// @brief y position
+  double y{0.0};
 
-    class DiffDrive
-    {
+/// @brief orientation
+  double theta{0.0};
+};
 
-    public:
-        /// @brief diff drive constructor
-        /// @param wheel_radius
-        /// @param track_width
-        DiffDrive(double wheel_radius, double track_width);
-        
-        DiffDrive(); // default constructor
+/// @brief wheel velocities (can also represent configuration)
+struct wheelVel
+{
+/// @brief left wheel velocity
+  double left_wheel_vel{0.0};
 
-        /// @brief forward kinematics. update robot configuration given wheel motion
-        /// @param new_wheel_config
-        void forwardKinematics(const wheelVel new_wheel_config);
+/// @brief right wheel velocity
+  double right_wheel_vel{0.0};
+};
 
-        /// @brief inverse kinematics. compute the wheel velocities required to achieve a desired twist
-        /// @param twist
-        /// @return wheelVel object with left and right wheel velocities
-        wheelVel inverseKinematics(const Twist2D twist) const;
+/// @brief differential drive robot kinematics
+class DiffDrive
+{
 
-        /// @brief convert wheel velocities to actual body twist
-        /// @param u
-        /// @return Twist2D object of {omega, xDot, yDot}
-        Twist2D computeBodyTwist(const wheelVel u) const;
+public:
+  /// @brief diff drive constructor
+  /// @param wheel_radius
+  /// @param track_width
+  DiffDrive(double wheel_radius, double track_width);
 
-        /// @brief getter for robot configuration
-        /// @return robotConfig object of {x,y,theta}
-        robotConfig get_config() const { return cur_config; }
+  /// @brief default constructor (turtlebot3 specific values)
+  DiffDrive();
 
+  /// @brief forward kinematics. update robot configuration given wheel motion
+  /// @param new_wheel_config {left_wheel_vel, right_wheel_vel}
+  void forwardKinematics(const wheelVel new_wheel_config);
 
-        /// @brief setter for robot configuration
-        /// @param config
-        void set_config(robotConfig config) { cur_config = config; }
+  /// @brief inverse kinematics. compute the wheel velocities required to achieve a desired twist
+  /// @param twist
+  /// @return wheelVel object with left and right wheel velocities
+  wheelVel inverseKinematics(const Twist2D twist) const;
 
-    private:
-        robotConfig cur_config;
-        wheelVel cur_wheel_vel;
+  /// @brief convert wheel velocities to actual body twist
+  /// @param u wheelVel object with left and right wheel velocities
+  /// @return Twist2D object of {omega, xDot, yDot}
+  Twist2D computeBodyTwist(const wheelVel u) const;
 
-        double wheel_radius;
-        double track_width;
-    };
+  /// @brief getter for robot configuration
+  /// @return robotConfig object of {x,y,theta}
+  robotConfig get_config() const {return cur_config;}
+
+  /// @brief setter for robot configuration
+  /// @param config
+  void set_config(robotConfig config) {cur_config = config;}
+
+private:
+  robotConfig cur_config;
+  wheelVel cur_wheel_vel;
+
+  double wheel_radius;
+  double track_width;
+};
 
 }
