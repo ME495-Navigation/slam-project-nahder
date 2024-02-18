@@ -56,6 +56,8 @@ public:
     path_pub = create_publisher<nav_msgs::msg::Path>(
       "red/path", 10);
 
+    fake_sensor_pub = create_publisher<visualization_msgs::msg::MarkerArray>(
+      "/fake_sensor", 10);
 
     declare_parameter("rate", 200.0);
     declare_parameter("x0", 0.0);
@@ -70,6 +72,8 @@ public:
     declare_parameter("obstacles.r", 0.5);
     declare_parameter("input_noise", 0.0);
     declare_parameter("slip_fraction", 0.0);
+    declare_parameter("basic_sensor_variance", 0.0);
+    declare_parameter("max_range", 2.0);
 
     rate = get_parameter("rate").as_double();
     x0 = get_parameter("x0").as_double();
@@ -84,10 +88,13 @@ public:
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
     input_noise = get_parameter("input_noise").as_double();
     slip_fraction = get_parameter("slip_fraction").as_double();
+    basic_sensor_variance = get_parameter("basic_sensor_variance").as_double();
+    max_range = get_parameter("max_range").as_double();
 
     red_x = x0, red_y = y0, red_theta = theta0;
 
     timer = create_wall_timer(1s / rate, std::bind(&NUSim::timer_callback, this));
+    fake_sensor_timer = create_wall_timer(0.2s, std::bind(&NUSim::fake_sensor_callback, this));
 
     auto walls_msg{create_walls(arena_x_length, arena_y_length)};
     walls_pub->publish(walls_msg);
@@ -96,13 +103,13 @@ public:
     obstacles_pub->publish(obstacles_msg);
     dt = 1.0 / rate;
 
-
     noise_gaussian = std::normal_distribution<>(0.0, std::sqrt(input_noise));
     slip_gaussian = std::uniform_real_distribution<>{-1.0 * slip_fraction, slip_fraction};
+    sensor_gaussian = std::normal_distribution<>(0.0, std::sqrt(basic_sensor_variance));
   }
 
 private:
-  rclcpp::TimerBase::SharedPtr timer;
+  rclcpp::TimerBase::SharedPtr timer, fake_sensor_timer;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_srv;
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv;
@@ -110,12 +117,14 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_pub;
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr red_wheel_cmd_sub;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_pub;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr fake_sensor_pub;
+
   turtlelib::DiffDrive red_diff_drive;
   nuturtlebot_msgs::msg::SensorData sensor_data;
 
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub;
   nav_msgs::msg::Path path_msg;
-  std::normal_distribution<> noise_gaussian;
+  std::normal_distribution<> noise_gaussian, sensor_gaussian;
   std::uniform_real_distribution<> slip_gaussian;
 
   double left_encoder_pos{0.0}, right_encoder_pos{0.0};
@@ -129,7 +138,7 @@ private:
 
   double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length,
     arena_y_length, obstacle_r, rate, motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt, input_noise,
-    slip_fraction;
+    slip_fraction, basic_sensor_variance, max_range;
 
   turtlelib::wheelVel red_wheel_vel{0.0, 0.0};
 
@@ -158,14 +167,57 @@ private:
     update_xform();
   }
 
+  /// @brief Publishes MarkerArray onto the fake_sensor topic with measured obstacle positions (wrt robot)
+  void fake_sensor_callback()
+  {
+    visualization_msgs::msg::MarkerArray perceived_obstacles;
+    turtlelib::Transform2D T_world_to_robot{{red_x, red_y}, red_theta};
+    auto T_robot_to_world = T_world_to_robot.inv();
+    const auto obstacle_height{0.25};
+
+    for (uint64_t i = 0; i < obstacles_x.size(); i++) {
+      // apply noise and transform obstacle position from world to robot frame
+      auto obstacle_pos = T_robot_to_world(
+        turtlelib::Point2D
+        {obstacles_x.at(i) + sensor_gaussian(get_random()),
+          obstacles_y.at(i) + sensor_gaussian(get_random())}
+      );
+
+      auto distance = std::sqrt(std::pow(obstacle_pos.x, 2) + std::pow(obstacle_pos.y, 2));
+
+      visualization_msgs::msg::Marker obs_marker;
+      obs_marker.header.frame_id = "red/base_footprint";
+      obs_marker.header.stamp = get_clock()->now();
+      obs_marker.id = i;
+      obs_marker.type = visualization_msgs::msg::Marker::CYLINDER;
+      obs_marker.scale.x = obstacle_r;
+      obs_marker.scale.y = obstacle_r;
+      obs_marker.scale.z = obstacle_height;
+      obs_marker.pose.position.x = obstacle_pos.x;
+      obs_marker.pose.position.y = obstacle_pos.y;
+      obs_marker.pose.position.z = obstacle_height / 2;
+      obs_marker.color.r = 1.0;
+      obs_marker.color.g = 1.0;
+      obs_marker.color.b = 0.0;
+      obs_marker.color.a = 1.0;
+
+      if (distance <= max_range) {
+        obs_marker.action = visualization_msgs::msg::Marker::ADD;
+      } else {
+        obs_marker.action = visualization_msgs::msg::Marker::DELETE;
+      }
+      perceived_obstacles.markers.push_back(obs_marker);
+    }
+    fake_sensor_pub->publish(perceived_obstacles);
+  }
+
+
   /// @brief Callback for wheel commands (in MCU, [-265, 265])
   /// @param wheel_cmd_msg The wheel commands message
   /// @details Converts wheel commands from MCU to rad/s
   void wheel_cmd_cb(const nuturtlebot_msgs::msg::WheelCommands & wheel_cmd_msg)
   {
     auto noise = noise_gaussian(get_random());
-    //log the slip value with RCLP_INFO (NOT STREAM)
-    RCLCPP_INFO(get_logger(), "noise: %f", noise);
     //calculate wheel commands in rad/s
     red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec; // UNITS: RAD/S
     red_wheel_vel.right_wheel_vel = wheel_cmd_msg.right_velocity * motor_cmd_per_rad_sec;
@@ -184,8 +236,6 @@ private:
   void publish_encoders()
   {
     auto slip = slip_gaussian(get_random());
-    //log the slip value with RCLP_INFO (NOT STREAM)
-    RCLCPP_INFO(get_logger(), "slip: %f", slip);
 
     new_left_rads = red_wheel_vel.left_wheel_vel * (1.0 + slip) * dt;   // WHEEL POS UNITS: RADIANS
     new_right_rads = red_wheel_vel.right_wheel_vel * (1.0 + slip) * dt; // WHEEL POS UNITS: RADIANS
@@ -265,6 +315,10 @@ private:
     response->success = true;
   }
 
+  /// @brief Create walls for visualization
+  /// @param x_length The length of the arena in the x direction
+  /// @param y_length The length of the arena in the y direction
+  /// @return visualization_msgs::msg::MarkerArray
   visualization_msgs::msg::MarkerArray create_walls(double x_length, double y_length)
   {
     visualization_msgs::msg::MarkerArray walls;
@@ -313,11 +367,11 @@ private:
     return walls;
   }
 
-  /// @brief
-  /// @param x
-  /// @param y
-  /// @param r
-  /// @return
+  /// @brief Create obstacles for visualization
+  /// @param x x positions of obstacles
+  /// @param y y positions of obstacles
+  /// @param r obstacle radii
+  /// @return visualization_msgs::msg::MarkerArray
   visualization_msgs::msg::MarkerArray create_obstacles(
     std::vector<double> x, std::vector<double> y, double r)
   {
