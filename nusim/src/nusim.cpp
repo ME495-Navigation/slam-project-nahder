@@ -10,6 +10,7 @@
 #include "turtlelib/diff_drive.hpp"
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
+// #include "sensor_msgs/msg/laser_scan"
 #include "nav_msgs/msg/path.hpp"
 #include <random>
 using namespace std::chrono_literals;
@@ -96,7 +97,7 @@ public:
     red_x = x0, red_y = y0, red_theta = theta0;
 
     timer = create_wall_timer(1s / rate, std::bind(&NUSim::timer_callback, this));
-    fake_sensor_timer = create_wall_timer(0.2s, std::bind(&NUSim::fake_sensor_callback, this));
+    sensor_timer = create_wall_timer(0.2s, std::bind(&NUSim::sensor_timer_callback, this));
 
     auto walls_msg{create_walls(arena_x_length, arena_y_length)};
     walls_pub->publish(walls_msg);
@@ -111,7 +112,7 @@ public:
   }
 
 private:
-  rclcpp::TimerBase::SharedPtr timer, fake_sensor_timer;
+  rclcpp::TimerBase::SharedPtr timer, sensor_timer;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_srv;
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv;
@@ -170,8 +171,14 @@ private:
     update_xform();
   }
 
+  void sensor_timer_callback()
+  {
+    publish_fake_sensor();
+
+  }
+
   /// @brief Publishes MarkerArray onto the fake_sensor topic with measured obstacle positions (wrt robot)
-  void fake_sensor_callback()
+  void publish_fake_sensor()
   {
     visualization_msgs::msg::MarkerArray perceived_obstacles;
     turtlelib::Transform2D T_world_to_robot{{red_x, red_y}, red_theta};
@@ -287,7 +294,7 @@ private:
     red_theta = red_diff_drive.get_config().theta;
   }
 
-  /// @brief Updates the robot pose and path in TF
+  /// @brief Publishes the current robot pose to TF and the path
   void update_xform()
   {
     xform_stamped.header.stamp = get_clock()->now();

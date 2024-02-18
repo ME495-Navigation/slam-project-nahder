@@ -35,7 +35,7 @@
 - [x] C.7 (turtle drive) 
 - [x] C.9 (robot position) 
 - [x] C.10 (basic sensor) 
-- [ ] C.11 (collision detection) 
+- [x] C.11 (collision detection) 
 - [ ] C.12 (LiDAR) 
 
 #### Task D (Kinematics) 
