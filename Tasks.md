@@ -33,8 +33,8 @@
 - [x] C.5 (cylindrical obstacles)
 - [x] C.6 (nusim launch)
 - [x] C.7 (turtle drive) 
-- [ ] C.9 (robot position) 
-- [ ] C.10 (basic sensor) 
+- [x] C.9 (robot position) 
+- [x] C.10 (basic sensor) 
 - [ ] C.11 (collision detection) 
 - [ ] C.12 (LiDAR) 
 

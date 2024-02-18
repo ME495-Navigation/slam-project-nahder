@@ -74,6 +74,7 @@ public:
     declare_parameter("slip_fraction", 0.0);
     declare_parameter("basic_sensor_variance", 0.0);
     declare_parameter("max_range", 2.0);
+    declare_parameter("collision_radius", 0.11);
 
     rate = get_parameter("rate").as_double();
     x0 = get_parameter("x0").as_double();
@@ -83,13 +84,14 @@ public:
     arena_y_length = get_parameter("arena_y_length").as_double();
     obstacles_x = get_parameter("obstacles.x").as_double_array();
     obstacles_y = get_parameter("obstacles.y").as_double_array();
-    obstacle_r = get_parameter("obstacles.r").as_double();
+    obstacle_radius = get_parameter("obstacles.r").as_double();
     motor_cmd_per_rad_sec = get_parameter("motor_cmd_per_rad_sec").as_double();
     encoder_ticks_per_rad = get_parameter("encoder_ticks_per_rad").as_double();
     input_noise = get_parameter("input_noise").as_double();
     slip_fraction = get_parameter("slip_fraction").as_double();
     basic_sensor_variance = get_parameter("basic_sensor_variance").as_double();
     max_range = get_parameter("max_range").as_double();
+    collision_radius = get_parameter("collision_radius").as_double();
 
     red_x = x0, red_y = y0, red_theta = theta0;
 
@@ -99,7 +101,7 @@ public:
     auto walls_msg{create_walls(arena_x_length, arena_y_length)};
     walls_pub->publish(walls_msg);
 
-    auto obstacles_msg{create_obstacles(obstacles_x, obstacles_y, obstacle_r)};
+    auto obstacles_msg{create_obstacles(obstacles_x, obstacles_y, obstacle_radius)};
     obstacles_pub->publish(obstacles_msg);
     dt = 1.0 / rate;
 
@@ -135,10 +137,10 @@ private:
   geometry_msgs::msg::TransformStamped xform_stamped;
   tf2::Quaternion q;
 
-
-  double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length,
-    arena_y_length, obstacle_r, rate, motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt, input_noise,
-    slip_fraction, basic_sensor_variance, max_range;
+  double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length, arena_y_length, obstacle_radius,
+    rate,
+    motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt, input_noise, slip_fraction,
+    basic_sensor_variance, max_range, collision_radius;
 
   turtlelib::wheelVel red_wheel_vel{0.0, 0.0};
 
@@ -164,6 +166,7 @@ private:
     timestep_pub->publish(msg);
     publish_encoders();
     update_robot_pose();
+    collision_handling();
     update_xform();
   }
 
@@ -183,15 +186,15 @@ private:
           obstacles_y.at(i) + sensor_gaussian(get_random())}
       );
 
-      auto distance = std::sqrt(std::pow(obstacle_pos.x, 2) + std::pow(obstacle_pos.y, 2));
+      auto dist = std::sqrt(std::pow(obstacle_pos.x, 2) + std::pow(obstacle_pos.y, 2));
 
       visualization_msgs::msg::Marker obs_marker;
       obs_marker.header.frame_id = "red/base_footprint";
       obs_marker.header.stamp = get_clock()->now();
       obs_marker.id = i;
       obs_marker.type = visualization_msgs::msg::Marker::CYLINDER;
-      obs_marker.scale.x = obstacle_r;
-      obs_marker.scale.y = obstacle_r;
+      obs_marker.scale.x = obstacle_radius;
+      obs_marker.scale.y = obstacle_radius;
       obs_marker.scale.z = obstacle_height;
       obs_marker.pose.position.x = obstacle_pos.x;
       obs_marker.pose.position.y = obstacle_pos.y;
@@ -201,7 +204,7 @@ private:
       obs_marker.color.b = 0.0;
       obs_marker.color.a = 1.0;
 
-      if (distance <= max_range) {
+      if (dist <= max_range) {
         obs_marker.action = visualization_msgs::msg::Marker::ADD;
       } else {
         obs_marker.action = visualization_msgs::msg::Marker::DELETE;
@@ -211,6 +214,33 @@ private:
     fake_sensor_pub->publish(perceived_obstacles);
   }
 
+  /// @brief Handles obstacle collision, stopping the red robot and forcing odom wheel slippage
+  void collision_handling()
+  {
+    double centers_dist{0.0}, intersect_amt{0.0};
+    for (uint64_t i = 0; i < obstacles_x.size(); i++) {
+      centers_dist = std::sqrt(
+        std::pow(red_x - obstacles_x.at(i), 2) +
+        std::pow(red_y - obstacles_y.at(i), 2)
+      );
+      intersect_amt = (collision_radius + obstacle_radius) - centers_dist;
+
+      // collision happening
+      if (intersect_amt > 0.0) {
+        // vector between the robot and the obstacle
+        auto v{
+          turtlelib::Vector2D{red_x, red_y} -
+          turtlelib::Vector2D{obstacles_x.at(i), obstacles_y.at(i)}
+        };
+
+        auto v_u = normalize_vector(v);
+        // move back by how much we are intersecting along this vector
+        auto new_pos = turtlelib::Vector2D{red_x, red_y} + (intersect_amt * v_u);
+
+        red_diff_drive.set_config({new_pos.x, new_pos.y, red_theta});
+      }
+    }
+  }
 
   /// @brief Callback for wheel commands (in MCU, [-265, 265])
   /// @param wheel_cmd_msg The wheel commands message
@@ -219,7 +249,7 @@ private:
   {
     auto noise = noise_gaussian(get_random());
     //calculate wheel commands in rad/s
-    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec; // UNITS: RAD/S
+    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec;     // UNITS: RAD/S
     red_wheel_vel.right_wheel_vel = wheel_cmd_msg.right_velocity * motor_cmd_per_rad_sec;
 
     //add zero-mean Gaussian noise with variance input_noise when red_wheel_vel != 0 (confident in stopping)
@@ -231,21 +261,20 @@ private:
     }
 
   }
-
   /// @brief Publishes the current wheel encoder positions
   void publish_encoders()
   {
     auto slip = slip_gaussian(get_random());
 
-    new_left_rads = red_wheel_vel.left_wheel_vel * (1.0 + slip) * dt;   // WHEEL POS UNITS: RADIANS
-    new_right_rads = red_wheel_vel.right_wheel_vel * (1.0 + slip) * dt; // WHEEL POS UNITS: RADIANS
+    new_left_rads = red_wheel_vel.left_wheel_vel * (1.0 + slip) * dt;     // WHEEL POS UNITS: RADIANS
+    new_right_rads = red_wheel_vel.right_wheel_vel * (1.0 + slip) * dt;     // WHEEL POS UNITS: RADIANS
 
-    left_encoder_pos += new_left_rads * encoder_ticks_per_rad;   // UNITS: TICKS
-    right_encoder_pos += new_right_rads * encoder_ticks_per_rad; // UNITS: TICKS'
+    left_encoder_pos += new_left_rads * encoder_ticks_per_rad;     // UNITS: TICKS
+    right_encoder_pos += new_right_rads * encoder_ticks_per_rad;     // UNITS: TICKS'
 
     sensor_data.left_encoder = left_encoder_pos;
     sensor_data.right_encoder = right_encoder_pos;
-    sensor_data_pub->publish(sensor_data); // PUBLISH CURRENT WHEEL ENCODER POSITIONS IN TICKS
+    sensor_data_pub->publish(sensor_data);     // PUBLISH CURRENT WHEEL ENCODER POSITIONS IN TICKS
   }
 
   /// @brief Updates the robot pose based on the wheel positions
