@@ -14,13 +14,13 @@ DiffDrive::DiffDrive(double wheel_radius, double track_width)
 
 void DiffDrive::forwardKinematics(const wheelVel u)
 {
-  Twist2D delta_q, Vb;
+    Twist2D delta_q, Vb; // just initialize these directly e.g. const auto Vb = computeBodyTwist(u)
 
   // convert wheel configuration to body twist
   Vb = computeBodyTwist(u);
 
   // integrate the body twist to get the new configuration
-  Transform2D T_b_bp = integrate_twist(Vb);
+  Transform2D T_b_bp = integrate_twist(Vb); // const auto
 
   // get the robot location in the world frame
   Transform2D T_wb{Vector2D{cur_config.x, cur_config.y}, cur_config.theta};
@@ -34,10 +34,10 @@ void DiffDrive::forwardKinematics(const wheelVel u)
 
 Twist2D DiffDrive::computeBodyTwist(const wheelVel u) const
 {
-  Twist2D twist;
-  double d{0.5 * track_width};
+    Twist2D twist; // initialize this directly
+  double d{0.5 * track_width}; // const auto
 
-  twist.omega = (wheel_radius / (2 * d)) * (u.right_wheel_vel - u.left_wheel_vel);
+  twist.omega = (wheel_radius / (2 * d)) * (u.right_wheel_vel - u.left_wheel_vel); // 2.0
 
   twist.x = (wheel_radius / 2) * (u.right_wheel_vel + u.left_wheel_vel);
 
@@ -48,7 +48,7 @@ Twist2D DiffDrive::computeBodyTwist(const wheelVel u) const
 
 wheelVel DiffDrive::inverseKinematics(const Twist2D twist) const
 {
-  wheelVel u;
+    wheelVel u; // initialzie directly
   double d{0.5 * track_width};
 
   if (twist.y != 0.0) {
