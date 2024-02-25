@@ -300,6 +300,41 @@ private:
     for (size_t i = 0; i < num_readings; i++) {
       double angle = angle_min + i * angle_increment + red_theta;
       double min_distance = range_max;
+      // Wall Collision Detection
+      double x_component = cos(angle);
+      double y_component = sin(angle);
+
+      // potential distances to each wall
+      std::vector<double> distances;
+
+      // calculate distances to the horizontal walls
+      if (y_component != 0) {
+        double distance_to_top_wall = (arena_y_length / 2 - red_y) / y_component;
+        double distance_to_bottom_wall = (-arena_y_length / 2 - red_y) / y_component;
+        if (distance_to_top_wall > 0) {
+          distances.push_back(distance_to_top_wall);
+        }
+        if (distance_to_bottom_wall > 0) {
+          distances.push_back(distance_to_bottom_wall);
+        }
+      }
+
+      // calculate distances to the vertical walls
+      if (x_component != 0) {
+        double distance_to_right_wall = (arena_x_length / 2 - red_x) / x_component;
+        double distance_to_left_wall = (-arena_x_length / 2 - red_x) / x_component;
+        if (distance_to_right_wall > 0) {
+          distances.push_back(distance_to_right_wall);
+        }
+        if (distance_to_left_wall > 0) {
+          distances.push_back(distance_to_left_wall);
+        }
+      }
+      // find the minimum distance to a wall
+      if (!distances.empty()) {
+        double wall_distance = *std::min_element(distances.begin(), distances.end());
+        min_distance = std::min(min_distance, wall_distance);
+      }
 
       for (size_t j = 0; j < obstacles_x.size(); j++) {
         double distance = line_circle_intersection(
@@ -580,8 +615,8 @@ private:
         obstacle.id = id;
         obstacle.type = visualization_msgs::msg::Marker::CYLINDER;
         obstacle.action = visualization_msgs::msg::Marker::ADD;
-        obstacle.scale.x = 2.0 * scale_x;
-        obstacle.scale.y = 2.0 * scale_y;
+        obstacle.scale.x = 2 * scale_x;
+        obstacle.scale.y = 2 * scale_y;
         obstacle.scale.z = obstacle_height;
         obstacle.pose.position.x = pos_x;
         obstacle.pose.position.y = pos_y;
