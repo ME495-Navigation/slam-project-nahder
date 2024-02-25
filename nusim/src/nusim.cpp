@@ -10,9 +10,13 @@
 #include "turtlelib/diff_drive.hpp"
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
-// #include "sensor_msgs/msg/laser_scan"
+#include "sensor_msgs/msg/laser_scan.hpp"
+
 #include "nav_msgs/msg/path.hpp"
 #include <random>
+#include <cmath>
+#include <vector>
+#include <limits>
 using namespace std::chrono_literals;
 
 class NUSim : public rclcpp::Node
@@ -60,6 +64,9 @@ public:
     fake_sensor_pub = create_publisher<visualization_msgs::msg::MarkerArray>(
       "/fake_sensor", 10);
 
+    laser_scan_pub = create_publisher<sensor_msgs::msg::LaserScan>(
+      "/lidar_data", 10);
+
     declare_parameter("rate", 200.0);
     declare_parameter("x0", 0.0);
     declare_parameter("y0", 0.0);
@@ -74,8 +81,15 @@ public:
     declare_parameter("input_noise", 0.0);
     declare_parameter("slip_fraction", 0.0);
     declare_parameter("basic_sensor_variance", 0.0);
-    declare_parameter("max_range", 2.0);
     declare_parameter("collision_radius", 0.11);
+
+    declare_parameter("angle_min", 0.0);
+    declare_parameter("angle_max", 6.2657318115234375);
+    declare_parameter("angle_increment", 0.01745329238474369);
+    declare_parameter("range_min", 0.11999999731779099);
+    declare_parameter("range_max", 3.5);
+    declare_parameter("scan_time", 0.20134228467941284);
+
 
     rate = get_parameter("rate").as_double();
     x0 = get_parameter("x0").as_double();
@@ -91,8 +105,16 @@ public:
     input_noise = get_parameter("input_noise").as_double();
     slip_fraction = get_parameter("slip_fraction").as_double();
     basic_sensor_variance = get_parameter("basic_sensor_variance").as_double();
-    max_range = get_parameter("max_range").as_double();
     collision_radius = get_parameter("collision_radius").as_double();
+
+    scan_time = get_parameter("scan_time").as_double();
+    angle_increment = get_parameter("angle_increment").as_double();
+
+    range_min = get_parameter("range_min").as_double();
+    range_max = get_parameter("range_max").as_double();
+
+    angle_min = get_parameter("angle_min").as_double();
+    angle_max = get_parameter("angle_max").as_double();
 
     red_x = x0, red_y = y0, red_theta = theta0;
 
@@ -105,6 +127,7 @@ public:
     auto obstacles_msg{create_obstacles(obstacles_x, obstacles_y, obstacle_radius)};
     obstacles_pub->publish(obstacles_msg);
     dt = 1.0 / rate;
+
 
     noise_gaussian = std::normal_distribution<>(0.0, std::sqrt(input_noise));
     slip_gaussian = std::uniform_real_distribution<>{-1.0 * slip_fraction, slip_fraction};
@@ -121,6 +144,7 @@ private:
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr red_wheel_cmd_sub;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_data_pub;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr fake_sensor_pub;
+  rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr laser_scan_pub;    // publish simulated lidar data
 
   turtlelib::DiffDrive red_diff_drive;
   nuturtlebot_msgs::msg::SensorData sensor_data;
@@ -141,13 +165,14 @@ private:
   double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length, arena_y_length, obstacle_radius,
     rate,
     motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt, input_noise, slip_fraction,
-    basic_sensor_variance, max_range, collision_radius;
+    basic_sensor_variance, collision_radius, scan_time, angle_increment, range_min,
+    range_max, angle_min, angle_max;
 
   turtlelib::wheelVel red_wheel_vel{0.0, 0.0};
 
   std::vector<double> obstacles_x, obstacles_y;
 
-  uint64_t timestep;
+  size_t timestep;
 
   std::mt19937 & get_random()
   {
@@ -173,9 +198,131 @@ private:
 
   void sensor_timer_callback()
   {
-    publish_fake_sensor();
+    publish_fake_sensor(); // publish perceived obstacles at 5Hz
+    publish_lidar(); // publish lidar data at 5Hz
+
 
   }
+
+  /// @brief calculates the intersection of a line segment and a circle
+  /// @param x1 x coordinate of the start of the line segment (robot position)
+  /// @param y1 y coordinate of the start of the line segment (robot position)
+  /// @param x2 x coordinate of the end of the line segment (robotx + range_max * cos(angle)
+  /// @param y2 y coordinate of the end of the line segment (roboty + range_max * sin(angle))
+  /// @param cx x coordinate of the circle center (obstacle center)
+  /// @param cy y coordinate of the circle center (obstacle center)
+  /// @param radius radius of the circle (obstacle radius)
+  /// @param lidar_angle angle of the LiDAR beam
+  /// @param robot_theta orientation of the robot
+  /// @return the distance to the intersection point if it exists, -1.0 otherwise
+
+  double line_circle_intersection(
+    double x1, double y1,
+    double x2, double y2,
+    double cx, double cy, double radius,
+    double lidar_angle, double robot_theta)
+  {
+    // translate line and circle so that the circle is at the origin
+    x1 -= cx; y1 -= cy;
+    x2 -= cx; y2 -= cy;
+
+    // define the line segment
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+    double dr = std::sqrt(dx * dx + dy * dy);
+    double D = x1 * y2 - x2 * y1;
+    auto sign_dy = 1;
+    double disc = radius * radius * dr * dr - D * D;
+
+    // no intersection when the discriminant is negative
+    if (disc < 0) {
+      return -1.0;
+    }
+
+    double sqrt_disc = std::sqrt(disc);
+
+    // calculate sign_dy to determine which intersection point to use
+    if (dy < 0) {
+      sign_dy = -1;
+    }
+
+    // intersection points (+/- are for the two intersection points)
+    double ix1 = (D * dy + sign_dy * dx * sqrt_disc) / (dr * dr);
+    double iy1 = (-D * dx + std::abs(dy) * sqrt_disc) / (dr * dr);
+
+    double ix2 = (D * dy - sign_dy * dx * sqrt_disc) / (dr * dr);
+    double iy2 = (-D * dx - std::abs(dy) * sqrt_disc) / (dr * dr);
+
+    // translate back to original coordinates
+    ix1 += cx; iy1 += cy;
+    ix2 += cx; iy2 += cy;
+
+    // direction vector of the LiDAR beam in world coordinates
+    double lidar_dx = std::cos(lidar_angle + robot_theta);
+    double lidar_dy = std::sin(lidar_angle + robot_theta);
+
+    // check if intersection points are in the direction of the LiDAR beam
+    double dot1 = (ix1 - x1 - cx) * lidar_dx + (iy1 - y1 - cy) * lidar_dy;
+    double dot2 = (ix2 - x1 - cx) * lidar_dx + (iy2 - y1 - cy) * lidar_dy;
+
+    // calculate distances to the intersection points from the start of the line segment
+    double distance1 =
+      std::sqrt((std::pow(ix1 - x1 - cx, 2) + std::pow(iy1 - y1 - cy, 2)));
+
+    double distance2 =
+      std::sqrt((std::pow(ix2 - x1 - cx, 2) + std::pow(iy2 - y1 - cy, 2)));
+
+    // determine the minimum distance to the intersection points and use dot to get the correct one
+    if (dot1 > 0.0 && (dot2 <= 0.0 || distance1 < distance2)) {
+      return distance1;
+    } else if (dot2 > 0.0 && (dot1 <= 0.0 || distance2 < distance1)) {
+      return distance2;
+    }
+
+    return -1.0;
+  }
+
+
+  void publish_lidar()
+  {
+    sensor_msgs::msg::LaserScan lidar_msg;
+    lidar_msg.header.stamp = get_clock()->now();
+    lidar_msg.header.frame_id = "red/base_footprint";
+    lidar_msg.angle_min = angle_min; // 0.0
+    lidar_msg.angle_max = angle_max; // 6.2657318115234375
+    lidar_msg.angle_increment = angle_increment; // 0.01745329238474369
+    lidar_msg.range_min = range_min; // 0.11999999731779099
+    lidar_msg.range_max = range_max; // 3.5
+    lidar_msg.scan_time = scan_time; // 0.20134228467941284
+    const auto num_readings = static_cast<size_t>((angle_max - angle_min) / angle_increment) + 1;
+    lidar_msg.ranges.resize(num_readings, range_max);
+
+    for (size_t i = 0; i < num_readings; i++) {
+      double angle = angle_min + i * angle_increment + red_theta;
+      double min_distance = range_max;
+
+      for (size_t j = 0; j < obstacles_x.size(); j++) {
+        double distance = line_circle_intersection(
+          red_x, red_y,
+          red_x + range_max * std::cos(angle),
+          red_y + range_max * std::sin(angle),
+          obstacles_x[j], obstacles_y[j], obstacle_radius,
+          angle_min + i * angle_increment,
+          red_theta);
+
+        if (distance < min_distance && distance >= range_min) {
+          min_distance = distance;
+        }
+      }
+
+      if (min_distance < range_max) {
+        lidar_msg.ranges[i] = min_distance;
+      }
+    }
+
+    laser_scan_pub->publish(lidar_msg);
+  }
+
 
   /// @brief Publishes MarkerArray onto the fake_sensor topic with measured obstacle positions (wrt robot)
   void publish_fake_sensor()
@@ -185,7 +332,7 @@ private:
     auto T_robot_to_world = T_world_to_robot.inv();
     const auto obstacle_height{0.25};
 
-    for (uint64_t i = 0; i < obstacles_x.size(); i++) {
+    for (size_t i = 0; i < obstacles_x.size(); i++) {
       // apply noise and transform obstacle position from world to robot frame
       auto obstacle_pos = T_robot_to_world(
         turtlelib::Point2D
@@ -200,8 +347,8 @@ private:
       obs_marker.header.stamp = get_clock()->now();
       obs_marker.id = i;
       obs_marker.type = visualization_msgs::msg::Marker::CYLINDER;
-      obs_marker.scale.x = obstacle_radius;
-      obs_marker.scale.y = obstacle_radius;
+      obs_marker.scale.x = obstacle_radius * 2.0;
+      obs_marker.scale.y = obstacle_radius * 2.0;
       obs_marker.scale.z = obstacle_height;
       obs_marker.pose.position.x = obstacle_pos.x;
       obs_marker.pose.position.y = obstacle_pos.y;
@@ -211,7 +358,7 @@ private:
       obs_marker.color.b = 0.0;
       obs_marker.color.a = 1.0;
 
-      if (dist <= max_range) {
+      if (dist <= range_max) {
         obs_marker.action = visualization_msgs::msg::Marker::ADD;
       } else {
         obs_marker.action = visualization_msgs::msg::Marker::DELETE;
@@ -225,7 +372,7 @@ private:
   void collision_handling()
   {
     double centers_dist{0.0}, intersect_amt{0.0};
-    for (uint64_t i = 0; i < obstacles_x.size(); i++) {
+    for (size_t i = 0; i < obstacles_x.size(); i++) {
       centers_dist = std::sqrt(
         std::pow(red_x - obstacles_x.at(i), 2) +
         std::pow(red_y - obstacles_y.at(i), 2)
@@ -360,7 +507,7 @@ private:
     visualization_msgs::msg::MarkerArray walls;
 
     auto wall_height{0.25};
-    auto wall_thickness{0.15};
+    auto wall_thickness{0.35};
 
     auto create_wall = [&](int id, double scale_x, double scale_y,
         double pos_x, double pos_y)
@@ -433,8 +580,8 @@ private:
         obstacle.id = id;
         obstacle.type = visualization_msgs::msg::Marker::CYLINDER;
         obstacle.action = visualization_msgs::msg::Marker::ADD;
-        obstacle.scale.x = scale_x;
-        obstacle.scale.y = scale_y;
+        obstacle.scale.x = 2.0 * scale_x;
+        obstacle.scale.y = 2.0 * scale_y;
         obstacle.scale.z = obstacle_height;
         obstacle.pose.position.x = pos_x;
         obstacle.pose.position.y = pos_y;
@@ -444,7 +591,7 @@ private:
         return obstacle;
       };
 
-    for (uint64_t i = 0; i < x.size(); i++) {
+    for (size_t i = 0; i < x.size(); i++) {
       obstacles.markers.push_back(create_obstacle(i, r, r, x[i], y[i]));
     }
 

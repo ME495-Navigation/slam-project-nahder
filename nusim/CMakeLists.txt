@@ -18,6 +18,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(nuturtlebot_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_executable(nusim src/nusim.cpp)
 
@@ -31,6 +32,7 @@ ament_target_dependencies(
   visualization_msgs
   nuturtlebot_msgs
   nav_msgs
+  sensor_msgs
 )
 
 install(TARGETS
