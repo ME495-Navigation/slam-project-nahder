@@ -162,11 +162,10 @@ private:
   geometry_msgs::msg::TransformStamped xform_stamped;
   tf2::Quaternion q;
 
-  double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length, arena_y_length, obstacle_radius,
-    rate,
-    motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt, input_noise, slip_fraction,
-    basic_sensor_variance, collision_radius, scan_time, angle_increment, range_min,
-    range_max, angle_min, angle_max;
+  double x0, y0, theta0, red_x, red_y, red_theta, arena_x_length, arena_y_length,
+    obstacle_radius, rate, motor_cmd_per_rad_sec, encoder_ticks_per_rad, dt, input_noise,
+    slip_fraction, basic_sensor_variance, collision_radius, scan_time, angle_increment,
+    range_min, range_max, angle_min, angle_max;
 
   turtlelib::wheelVel red_wheel_vel{0.0, 0.0};
 
@@ -287,7 +286,7 @@ private:
   {
     sensor_msgs::msg::LaserScan lidar_msg;
     lidar_msg.header.stamp = get_clock()->now();
-    lidar_msg.header.frame_id = "red/base_footprint";
+    lidar_msg.header.frame_id = "red/base_scan";
     lidar_msg.angle_min = angle_min; // 0.0
     lidar_msg.angle_max = angle_max; // 6.2657318115234375
     lidar_msg.angle_increment = angle_increment; // 0.01745329238474369
