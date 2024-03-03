@@ -156,6 +156,10 @@ private:
 
   double left_encoder_pos{0.0}, right_encoder_pos{0.0};
   double new_left_rads{0.0}, new_right_rads{0.0};
+
+  double left_encoder_pos_noise_free{0.0}, right_encoder_pos_noise_free{0.0};
+  double new_left_rads_noise_free{0.0}, new_right_rads_noise_free{0.0};
+
   turtlelib::wheelVel wheel_config{0.0, 0.0};
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
@@ -168,6 +172,7 @@ private:
     range_min, range_max, angle_min, angle_max;
 
   turtlelib::wheelVel red_wheel_vel{0.0, 0.0};
+  turtlelib::wheelVel noise_free_wheel_vel{0.0, 0.0};
 
   std::vector<double> obstacles_x, obstacles_y;
 
@@ -296,20 +301,21 @@ private:
     const auto num_readings = static_cast<size_t>((angle_max - angle_min) / angle_increment) + 1;
     lidar_msg.ranges.resize(num_readings, range_max);
 
+    const double lidar_offset_x = 0.03; // LiDAR offset from the center of the robot in meters
+    double lidar_x = red_x - lidar_offset_x * cos(red_theta); // Adjusted LiDAR x-coordinate
+    double lidar_y = red_y - lidar_offset_x * sin(red_theta); // Adjusted LiDAR y-coordinate
+
     for (size_t i = 0; i < num_readings; i++) {
       double angle = angle_min + i * angle_increment + red_theta;
       double min_distance = range_max;
-      // Wall Collision Detection
       double x_component = cos(angle);
       double y_component = sin(angle);
-
-      // potential distances to each wall
       std::vector<double> distances;
 
-      // calculate distances to the horizontal walls
+      // Calculate distances to the horizontal walls
       if (y_component != 0) {
-        double distance_to_top_wall = (arena_y_length / 2 - red_y) / y_component;
-        double distance_to_bottom_wall = (-arena_y_length / 2 - red_y) / y_component;
+        double distance_to_top_wall = (arena_y_length / 2 - lidar_y) / y_component;
+        double distance_to_bottom_wall = (-arena_y_length / 2 - lidar_y) / y_component;
         if (distance_to_top_wall > 0) {
           distances.push_back(distance_to_top_wall);
         }
@@ -318,10 +324,10 @@ private:
         }
       }
 
-      // calculate distances to the vertical walls
+      // Calculate distances to the vertical walls
       if (x_component != 0) {
-        double distance_to_right_wall = (arena_x_length / 2 - red_x) / x_component;
-        double distance_to_left_wall = (-arena_x_length / 2 - red_x) / x_component;
+        double distance_to_right_wall = (arena_x_length / 2 - lidar_x) / x_component;
+        double distance_to_left_wall = (-arena_x_length / 2 - lidar_x) / x_component;
         if (distance_to_right_wall > 0) {
           distances.push_back(distance_to_right_wall);
         }
@@ -329,17 +335,19 @@ private:
           distances.push_back(distance_to_left_wall);
         }
       }
-      // find the minimum distance to a wall
+
+      // Find the minimum distance to a wall
       if (!distances.empty()) {
         double wall_distance = *std::min_element(distances.begin(), distances.end());
         min_distance = std::min(min_distance, wall_distance);
       }
 
+      // Checking for obstacle collisions
       for (size_t j = 0; j < obstacles_x.size(); j++) {
         double distance = line_circle_intersection(
-          red_x, red_y,
-          red_x + range_max * std::cos(angle),
-          red_y + range_max * std::sin(angle),
+          lidar_x, lidar_y,
+          lidar_x + range_max * x_component,
+          lidar_y + range_max * y_component,
           obstacles_x[j], obstacles_y[j], obstacle_radius,
           angle_min + i * angle_increment,
           red_theta);
@@ -349,6 +357,7 @@ private:
         }
       }
 
+      // Assign the calculated minimum distance
       if (min_distance < range_max) {
         lidar_msg.ranges[i] = min_distance;
       }
@@ -435,34 +444,42 @@ private:
   /// @details Converts wheel commands from MCU to rad/s
   void wheel_cmd_cb(const nuturtlebot_msgs::msg::WheelCommands & wheel_cmd_msg)
   {
-    auto noise = noise_gaussian(get_random());
-    //calculate wheel commands in rad/s
-    red_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec;     // UNITS: RAD/S
-    red_wheel_vel.right_wheel_vel = wheel_cmd_msg.right_velocity * motor_cmd_per_rad_sec;
+    // Calculate wheel commands in rad/s without noise for ground truth
+    noise_free_wheel_vel.left_wheel_vel = wheel_cmd_msg.left_velocity * motor_cmd_per_rad_sec;
+    noise_free_wheel_vel.right_wheel_vel = wheel_cmd_msg.right_velocity * motor_cmd_per_rad_sec;
 
-    //add zero-mean Gaussian noise with variance input_noise when red_wheel_vel != 0 (confident in stopping)
-    if (red_wheel_vel.left_wheel_vel != 0.0) {
-      red_wheel_vel.left_wheel_vel += noise;
-    }
-    if (red_wheel_vel.right_wheel_vel != 0.0) {
-      red_wheel_vel.right_wheel_vel += noise;
-    }
-
+    // Add independent zero-mean Gaussian noise to each wheel's velocity for simulation
+    red_wheel_vel.left_wheel_vel = noise_free_wheel_vel.left_wheel_vel +
+      noise_gaussian(get_random());
+    red_wheel_vel.right_wheel_vel = noise_free_wheel_vel.right_wheel_vel + noise_gaussian(
+      get_random());
   }
-  /// @brief Publishes the current wheel encoder positions
+
   void publish_encoders()
   {
-    auto slip = slip_gaussian(get_random());
+    // Apply independent wheel slip to each wheel for simulation
+    double slip_left = slip_gaussian(get_random());
+    double slip_right = slip_gaussian(get_random());
 
-    new_left_rads = red_wheel_vel.left_wheel_vel * (1.0 + slip) * dt;     // WHEEL POS UNITS: RADIANS
-    new_right_rads = red_wheel_vel.right_wheel_vel * (1.0 + slip) * dt;     // WHEEL POS UNITS: RADIANS
+    new_left_rads = red_wheel_vel.left_wheel_vel * (1.0 + slip_left) * dt;
+    new_right_rads = red_wheel_vel.right_wheel_vel * (1.0 + slip_right) * dt;
 
-    left_encoder_pos += new_left_rads * encoder_ticks_per_rad;     // UNITS: TICKS
-    right_encoder_pos += new_right_rads * encoder_ticks_per_rad;     // UNITS: TICKS'
+    // Update the simulation encoder positions with noise and slip affected values
+    left_encoder_pos += new_left_rads * encoder_ticks_per_rad;
+    right_encoder_pos += new_right_rads * encoder_ticks_per_rad;
 
-    sensor_data.left_encoder = left_encoder_pos;
-    sensor_data.right_encoder = right_encoder_pos;
-    sensor_data_pub->publish(sensor_data);     // PUBLISH CURRENT WHEEL ENCODER POSITIONS IN TICKS
+    // Calculate noise-free and slip-free wheel rotations for ground truth
+    new_left_rads_noise_free = noise_free_wheel_vel.left_wheel_vel * dt;
+    new_right_rads_noise_free = noise_free_wheel_vel.right_wheel_vel * dt;
+
+    // Convert noise-free rotations to encoder ticks for publishing ground truth
+    left_encoder_pos_noise_free += new_left_rads_noise_free * encoder_ticks_per_rad;
+    right_encoder_pos_noise_free += new_right_rads_noise_free * encoder_ticks_per_rad;
+
+    // Create and publish the sensor data with ground truth values
+    sensor_data.left_encoder = left_encoder_pos_noise_free;
+    sensor_data.right_encoder = right_encoder_pos_noise_free;
+    sensor_data_pub->publish(sensor_data);
   }
 
   /// @brief Updates the robot pose based on the wheel positions
