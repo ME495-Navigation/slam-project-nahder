@@ -83,8 +83,8 @@ private:
     u.right_wheel_vel /= motor_cmd_per_rad_sec;
 
     // clamp wheel velocities
-    // u.left_wheel_vel = std::clamp(u.left_wheel_vel, -motor_cmd_max, motor_cmd_max);
-    // u.right_wheel_vel = std::clamp(u.right_wheel_vel, -motor_cmd_max, motor_cmd_max);
+    u.left_wheel_vel = std::clamp(u.left_wheel_vel, -motor_cmd_max, motor_cmd_max);
+    u.right_wheel_vel = std::clamp(u.right_wheel_vel, -motor_cmd_max, motor_cmd_max);
 
     // convert wheelVel u to nuturtlebot_msgs::msg::WheelCommands wheelMsg
     nuturtlebot_msgs::msg::WheelCommands wheel_cmd_msg;

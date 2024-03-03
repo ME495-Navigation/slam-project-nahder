@@ -1,5 +1,9 @@
+#ifndef DIFF_DRIVE_HPP
+#define DIFF_DRIVE_HPP
+
 #include "turtlelib/geometry2d.hpp"
 #include "turtlelib/se2d.hpp"
+
 
 namespace turtlelib
 {
@@ -71,3 +75,5 @@ private:
 };
 
 }
+
+#endif
