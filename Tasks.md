@@ -57,14 +57,14 @@
 - [x] F.6 (laser scanner)
   
 #### Task V (Visualization)
-- [ ] V.1 (simulation standalone)
-- [ ] V.2 (simulation with odometry) 
-- [ ] V.3 (real robot with odometry) 
-- [ ] V.4 (simulated robot with SLAM) 
+- [x] V.1 (simulation standalone)
+- [x] V.2 (simulation with odometry) 
+- [x] V.3 (real robot with odometry) 
+- [x] V.4 (simulated robot with SLAM) 
 
 #### Task L (SLAM)
-- [ ] L.1 (main SLAM results)
-- [ ] L.2 (SLAM in a controlled environment) 
+- [x] L.1 (main SLAM results)
+- [x] L.2 (SLAM in a controlled environment) 
   
   
 
