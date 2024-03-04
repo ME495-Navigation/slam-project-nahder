@@ -54,15 +54,13 @@ void EKF::predict(Twist2D u)
   prev_twist = u;
 
   // calculate the A matrix
-  arma::mat At(2 * n + 3, 2 * n + 3, arma::fill::eye); // Start with an identity matrix
-  // At(1, 0) = -ut.y;
-  // At(2, 0) = ut.x;
+  arma::mat At(2 * n + 3, 2 * n + 3, arma::fill::eye);
   double theta = normalize_angle(state(0));
 
   if (almost_equal(ut.omega, 0.0)) {
     At(1, 0) = -ut.x * sin(theta);
     At(2, 0) = ut.x * cos(theta);
-  } else {
+  } else { // non-zero angular velocity
     At(1, 0) = (-ut.x / ut.omega) * cos(theta) + (ut.x / ut.omega) * cos(
       normalize_angle(theta + ut.omega));
 
