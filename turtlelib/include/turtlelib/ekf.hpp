@@ -18,6 +18,8 @@ public:
   void update(double obs_x, double obs_y, int j);
 
 private:
+  arma::mat construct_measurement_jacobian(const Vector2D & diff, double dist, int j);
+
   arma::vec state, predicted_state;
   arma::mat cov, predicted_cov;
 
@@ -25,5 +27,7 @@ private:
   arma::mat H, K, R, Q;
 
   std::vector<bool> obstacle_seen;
+
+
 };
 }
