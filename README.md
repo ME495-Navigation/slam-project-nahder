@@ -28,7 +28,7 @@ To move the robot in a circle, `cmd_src` can be changed to `circle` and the foll
 
 <video src="https://github.com/ME495-Navigation/slam-project-nahder/assets/71537050/53fe6094-3c2d-410a-861c-9a2a37c1fa53"></video>
 
-# SLAM Demonstration
+# SLAM Results (Known Landmark Association)
 To run the SLAM launchfile and visualize all three robots in rviz:
 `ros2 launch nuslam slam.launch.xml robot:=nusim cmd_src:=circle`
 
@@ -40,4 +40,6 @@ As seen, the odometry estimate is a perfect circle (as it is unaware of noise an
 The estimated path from SLAM is seen by the green landmarks.
 ![slam](https://github.com/ME495-Navigation/slam-project-nahder/assets/71537050/5600f66c-c5b3-44ba-9b5d-5bbb8b55320a)
 
+# SLAM Results (Unknown Landmark Association)
+Coming soon...
 
