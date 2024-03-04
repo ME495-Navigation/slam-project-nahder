@@ -35,7 +35,8 @@ The following service call then moves the simulated turtlebot (red) move in a ci
 `ros2 service call /control nuturtle_control/srv/Control {"velocity: 0.2, radius: 1.0"}`
 
 The blue robot and its path represents its odometry estimate, and the green robot and its path represents the EKF SLAM estimate.
-As seen, the odometry estimate is a perfect circle (as it is unaware of noise and wheel slippage in real world conditions)
+As seen, the odometry estimate is a perfect circle (as it is unaware of noise and wheel slippage in real world conditions). 
+The estimated path from SLAM is seen by the green landmarks.
 ![slam](https://github.com/ME495-Navigation/slam-project-nahder/assets/71537050/5600f66c-c5b3-44ba-9b5d-5bbb8b55320a)
 
 
