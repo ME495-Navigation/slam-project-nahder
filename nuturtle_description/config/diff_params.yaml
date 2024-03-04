@@ -7,8 +7,8 @@
     encoder_ticks_per_rad: 651.898160011
     collision_radius: 0.11
  
-    input_noise: 0.1
-    slip_fraction: 0.2
+    input_noise: 0.3
+    slip_fraction: 0.4
     basic_sensor_variance: 0.0001
     time_increment: 0.0005592841189354658
     scan_time: 0.20134228467941284

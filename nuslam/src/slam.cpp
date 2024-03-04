@@ -10,6 +10,7 @@
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 #include "turtlelib/ekf.hpp"
+#include "nav_msgs/msg/path.hpp"
 
 using namespace std::chrono_literals;
 class Slam : public rclcpp::Node
@@ -62,6 +63,9 @@ public
       "~/obstacle_map",
       10);
 
+    slam_path_pub = create_publisher<nav_msgs::msg::Path>(
+      "green/path", 10);
+
     prev_js_msg.position = {0.0, 0.0};
   }
 
@@ -74,6 +78,7 @@ private:
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr fake_sensor_sub;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacle_pub;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr slam_path_pub;
 
   rclcpp::TimerBase::SharedPtr timer;
 
@@ -83,6 +88,7 @@ private:
   sensor_msgs::msg::JointState prev_js_msg;
   turtlelib::EKF ekf;
   turtlelib::Transform2D T_odom_robot, T_map_odom, T_map_robot;
+  nav_msgs::msg::Path path;
 
   void check_params()
   {
@@ -201,6 +207,21 @@ private:
     }
     auto state = ekf.get_state();
     auto robot_pos = turtlelib::Vector2D{state(1), state(2)};
+    //add to slam path pub
+    tf2::Quaternion q_s;
+    q_s.setRPY(0, 0, state(0));
+    path.header.frame_id = "nusim/world";
+    path.header.stamp = get_clock()->now();
+    geometry_msgs::msg::PoseStamped pose;
+    pose.pose.position.x = robot_pos.x;
+    pose.pose.position.y = robot_pos.y;
+    pose.pose.position.z = 0.0;
+    pose.pose.orientation.x = q_s.x();
+    pose.pose.orientation.y = q_s.y();
+    pose.pose.orientation.z = q_s.z();
+    pose.pose.orientation.w = q_s.w();
+    path.poses.push_back(pose);
+    slam_path_pub->publish(path);
     auto robot_theta = state(0);
     T_map_robot = turtlelib::Transform2D{robot_pos, robot_theta};
 
