@@ -4,9 +4,10 @@
 # Package List
 This repository consists of several ROS packages
 - `nuturtle_description`: visualizes multiple turtlebots of different colors in rviz
-- `turtlelib`: provides SE(2) transformation methods and SVG visualization
+- `turtlelib`: provides SE(2) transformation methods, SVG visualization, and EKF SLAM 
 - `nusim`: initializes simulation environment with walls and obstacles
 - `nuturtle_control`: controls the turtlebot and updates its odometry estimate (integration tests included)
+- `nuslam`: applies the EKF SLAM to estimate the position of the robot and map the environment
 
 
 # Movement Demo
