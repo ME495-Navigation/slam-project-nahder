@@ -48,9 +48,7 @@ void EKF::predict(Twist2D u)
   };
 
   // update the state
-  predicted_state(0) = normalize_angle(state(0) + ut.omega);
-  predicted_state(1) += ut.x * cos(state(0));
-  predicted_state(2) += ut.x * sin(state(0));
+  //TODO: update the predicted state
   prev_twist = u;
 
   // calculate the A matrix
