@@ -21,17 +21,17 @@ public
   Slam()
   : Node("nuslam")
   {
-    declare_parameter("slam_body_id", "");         // base_footprint
-    declare_parameter("slam_odom_id", "");     // o
+    declare_parameter("slam_body_id", "");
+    declare_parameter("slam_odom_id", "");
 
-    declare_parameter("wheel_left", "");      // wheel_left_joint
-    declare_parameter("wheel_right", "");     // wheel_right_joint
+    declare_parameter("wheel_left", "");
+    declare_parameter("wheel_right", "");
 
     declare_parameter("wheel_radius", 0.0);
     declare_parameter("track_width", 0.0);
 
-    slam_body_id = get_parameter("slam_body_id").as_string(); // green /base_footprint
-    slam_odom_id = get_parameter("slam_odom_id").as_string(); // green /odom
+    slam_body_id = get_parameter("slam_body_id").as_string();
+    slam_odom_id = get_parameter("slam_odom_id").as_string();
 
     wheel_left = get_parameter("wheel_left").as_string();
     wheel_right = get_parameter("wheel_right").as_string();
@@ -128,6 +128,7 @@ private:
     odom_msg.twist.twist.linear.x = body_twist.x;
     odom_msg.twist.twist.linear.y = body_twist.y;
     odom_msg.twist.twist.angular.z = body_twist.omega;
+    ekf.predict(turtlelib::Twist2D{config.x, config.y, config.theta});
 
     tf2::Quaternion q, q_map;
     q.setRPY(0, 0, config.theta);
@@ -193,10 +194,6 @@ private:
   // update T_map_robot for the xform broadcaster
   void fake_sensor_callback(const visualization_msgs::msg::MarkerArray::SharedPtr lidar_data_msg)
   {
-    auto config = turtleBot.get_config();
-
-    //ekf predict takes in the current robot twist (using its configuration,t=1)
-    ekf.predict(turtlelib::Twist2D{config.x, config.y, config.theta});
 
     //ekf update takes in the perceived obstacles and index of the perceived obstacles
     for (size_t i = 0; i < lidar_data_msg->markers.size(); i++) {

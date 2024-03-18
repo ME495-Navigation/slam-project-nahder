@@ -48,7 +48,10 @@ void EKF::predict(Twist2D u)
   };
 
   // update the state
-  //TODO: update the predicted state
+
+  predicted_state(0) = normalize_angle(state(0) + ut.omega);
+  predicted_state(1) += ut.x * cos(state(0));
+  predicted_state(2) += ut.x * sin(state(0));
   prev_twist = u;
 
   // calculate the A matrix
@@ -68,7 +71,7 @@ void EKF::predict(Twist2D u)
 
   // calculate the Q matrix
   arma::mat Q(3, 3, arma::fill::eye);
-  Q *= 0.1; // multiply by process noise
+  Q *= 0.2; // multiply by process noise
 
   // create the augmented Q matrix
   arma::mat Q_bar = arma::join_cols(
@@ -109,7 +112,7 @@ void EKF::update(double obs_x, double obs_y, int j)
   arma::mat H = construct_measurement_jacobian(diff, dist, j);
 
   // compute the Kalman gain
-  arma::mat R = arma::mat(2, 2, arma::fill::eye) * 0.1;   // measurement noise
+  arma::mat R = arma::mat(2, 2, arma::fill::eye) * 0.15;   // measurement noise
   arma::mat K = predicted_cov * H.t() * arma::inv(H * predicted_cov * H.t() + R);   // Kalman gain calculation
 
   // compute innovation: the difference between actual and expected measurement
