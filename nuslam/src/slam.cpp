@@ -242,7 +242,6 @@ private:
       obstacles_arr.markers.push_back(obstacle);
     }
     obstacle_pub->publish(obstacles_arr);
-
   }
 
 
