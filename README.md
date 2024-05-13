@@ -1,4 +1,4 @@
-# ME495 Sensing, Navigation and Machine Learning For Robotics
+# EKF SLAM for a Differential Drive Robot
 * Nader Ahmed
 * Winter 2024
 # Package List
