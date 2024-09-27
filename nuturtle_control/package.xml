@@ -17,7 +17,8 @@
   <depend>catch_ros2</depend>  
   <depend>geometry_msgs</depend>
   <depend>turtlelib</depend>
-
+  <depend>nuturtlebot_msgs</depend>
+  
   <test_depend>ament_lint_auto</test_depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
