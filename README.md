@@ -9,7 +9,6 @@ This repository consists of several ROS packages
 - `nuturtle_control`: controls the turtlebot and updates its odometry estimate (integration tests included)
 - `nuslam`: applies the EKF SLAM to estimate the position of the robot and map the environment
 
-
 # Movement Demo
 To run the simulator and control with teleop, execute:
 `ros2 launch nuturtle_control start_robot.launch.xml robot:=nusim cmd_src:=teleop use_rviz:=true`
@@ -40,6 +39,4 @@ As seen, the odometry estimate is a perfect circle (as it is unaware of noise an
 The estimated path from SLAM is seen by the green landmarks.
 ![slam](https://github.com/ME495-Navigation/slam-project-nahder/assets/71537050/5600f66c-c5b3-44ba-9b5d-5bbb8b55320a)
 
-# SLAM Results (Unknown Landmark Association)
-Coming soon...
 
