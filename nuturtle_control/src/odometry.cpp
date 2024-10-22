@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
 #include "turtlelib/diff_drive.hpp"
+#include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
@@ -39,6 +40,8 @@ public:
 
     turtleBot = turtlelib::DiffDrive(wheel_radius, track_width);
     odom_pub = create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
+    odom_path_pub = create_publisher<nav_msgs::msg::Path>("blue/path", 10);
+
     joint_state_sub = create_subscription<sensor_msgs::msg::JointState>(
       "/joint_states", 10, std::bind(&Odometry::joint_state_callback, this, std::placeholders::_1));
 
@@ -55,7 +58,9 @@ public:
 private:
   std::string body_id, wheel_left, wheel_right, odom_id;
   double wheel_radius, track_width;
-
+  nav_msgs::msg::Path odom_path;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub;
+  
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub;
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv;
@@ -84,7 +89,6 @@ private:
     // joint state msg has the position and velocity for each wheel
     // take the joint state msg, turn it into a wheelVel object, and pass it to forwardKinematics
     turtlelib::wheelVel new_wheel_config{
-      //TODO: make sure these indices are not flipped
       js_msg.position.at(1) - prev_js_msg.position.at(1),       // in radians
       js_msg.position.at(0) - prev_js_msg.position.at(0)};
 
@@ -95,6 +99,7 @@ private:
 
     // publish the new robot configuration as an odometry message
     nav_msgs::msg::Odometry odom_msg;
+      
     // format an odometry message with the new robot configuration and publish it
     odom_msg.header.stamp = get_clock()->now();
     odom_msg.header.frame_id = odom_id;
@@ -114,6 +119,20 @@ private:
     odom_msg.pose.pose.orientation.w = q.w();
     odom_pub->publish(odom_msg);
 
+    // publish the new robot configuration as a path
+    odom_path.header.frame_id = "nusim/world";
+    odom_path.header.stamp = get_clock()->now();
+    geometry_msgs::msg::PoseStamped pose_stamped;
+    pose_stamped.pose.position.x = config.x;
+    pose_stamped.pose.position.y = config.y;
+    pose_stamped.pose.position.z = 0.0;
+    pose_stamped.pose.orientation.x = q.x();
+    pose_stamped.pose.orientation.y = q.y();
+    pose_stamped.pose.orientation.z = q.z();
+    pose_stamped.pose.orientation.w = q.w();
+    odom_path.poses.push_back(pose_stamped);
+    odom_path_pub->publish(odom_path);
+    
     // publish the new robot configuration as a transform
     geometry_msgs::msg::TransformStamped odom_xform;
     odom_xform.header.stamp = get_clock()->now();
