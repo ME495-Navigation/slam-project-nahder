@@ -7,7 +7,7 @@ Panels:
         - /Obstacles1/Topic1
         - /Walls1/Topic1
         - /Odometry1/Shape1
-      Splitter Ratio: 0.5
+      Splitter Ratio: 0.4941176474094391
     Tree Height: 403
   - Class: rviz_common/Selection
     Name: Selection
@@ -45,7 +45,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 6
+      Plane Cell Count: 5
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -476,25 +476,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 6.475273609161377
+      Distance: 9.339733123779297
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.7727542519569397
-        Y: 0.2891887426376343
-        Z: -1.6302740573883057
+        X: 0.7703864574432373
+        Y: 0.16822496056556702
+        Z: -1.699458122253418
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8247970342636108
+      Pitch: 0.8047969937324524
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.7436094284057617
+      Yaw: 3.7586112022399902
     Saved: ~
 Window Geometry:
   Displays:

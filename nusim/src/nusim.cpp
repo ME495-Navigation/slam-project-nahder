@@ -557,8 +557,8 @@ private:
   {
     visualization_msgs::msg::MarkerArray walls;
 
-    auto wall_height{0.25};
-    auto wall_thickness{0.35};
+    auto wall_height{0.35};
+    auto wall_thickness{0.2};
 
     auto create_wall = [&](int id, double scale_x, double scale_y,
         double pos_x, double pos_y)
